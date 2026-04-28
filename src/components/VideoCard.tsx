@@ -1,5 +1,7 @@
+"use client";
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 
 interface VideoCardProps {
@@ -9,7 +11,7 @@ interface VideoCardProps {
 
 export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
   const isRow = layout === 'row';
-  const navigate = useNavigate();
+  const router = useRouter();
   // Sometimes API returns search endpoint results where id is an object
   const videoId = typeof video.id === 'string' ? video.id : video.id?.videoId;
   
@@ -29,7 +31,7 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
   const timeAgo = publishTime ? formatDistanceToNow(new Date(publishTime), { addSuffix: true }) : '';
 
   const handleCardClick = () => {
-    navigate(`/watch/${videoId}`);
+    router.push(`/watch/${videoId}`);
   };
 
   return (
@@ -52,7 +54,7 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
       <div className={`flex gap-3 ${isRow ? 'flex-1 py-1' : ''}`}>
         {!isRow && (
           <div className="shrink-0 pt-0.5">
-            <Link to={video.snippet?.channelId ? `/channel/${video.snippet.channelId}` : '#'} onClick={(e) => { e.stopPropagation(); if(!video.snippet?.channelId) e.preventDefault(); }}>
+            <Link href={video.snippet?.channelId ? `/channel/${video.snippet.channelId}` : '#'} onClick={(e) => { e.stopPropagation(); if(!video.snippet?.channelId) e.preventDefault(); }}>
               <div className="w-9 h-9 rounded-full bg-[#333] flex items-center justify-center text-sm hover:opacity-80 transition-opacity">
                 {channelTitle.charAt(0).toUpperCase()}
               </div>
@@ -66,7 +68,7 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
             dangerouslySetInnerHTML={{ __html: title }}
           />
           <div className={`text-sm text-[#aaaaaa] flex ${isRow ? 'flex-col sm:flex-row sm:items-center' : 'flex-col'} mt-0.5`}>
-            <Link to={video.snippet?.channelId ? `/channel/${video.snippet.channelId}` : '#'} className="hover:text-white transition-colors block" onClick={(e) => { e.stopPropagation(); if(!video.snippet?.channelId) e.preventDefault(); }}>
+            <Link href={video.snippet?.channelId ? `/channel/${video.snippet.channelId}` : '#'} className="hover:text-white transition-colors block" onClick={(e) => { e.stopPropagation(); if(!video.snippet?.channelId) e.preventDefault(); }}>
               {channelTitle}
             </Link>
             <div className={`flex items-center ${isRow ? 'sm:before:content-["•"] sm:before:mx-1 shadow-sm' : ''}`}>

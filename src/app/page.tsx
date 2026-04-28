@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { fetchFromAPI } from '../services/youtube';
 import VideoCard from '../components/VideoCard';

@@ -1,5 +1,6 @@
+"use client";
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Home, Compass, PlaySquare, Clock, ThumbsUp, Flame, Music, Gamepad2, Trophy, Settings, HelpCircle, MessageSquare } from 'lucide-react';
 
 const categories = [
@@ -40,7 +41,7 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
 
         return (
           <Link
-            to={cat.path || '/'}
+            href={cat.path || '/'}
             key={cat.name}
             className={`flex items-center gap-5 px-6 py-2.5 mx-2 rounded-lg hover:bg-[#272727] transition-colors ${isOpen ? '' : 'justify-center !px-0'}`}
             title={!isOpen ? cat.name : undefined}

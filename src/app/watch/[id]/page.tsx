@@ -1,14 +1,17 @@
+"use client";
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import ReactPlayer from 'react-player';
 const Player: any = ReactPlayer;
-import { fetchFromAPI } from '../services/youtube';
-import VideoCard from '../components/VideoCard';
+import { fetchFromAPI } from '../../../services/youtube';
+import VideoCard from '../../../components/VideoCard';
 import { ThumbsUp, ThumbsDown, Share2, Download, MoreHorizontal, MessageSquare } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function Watch() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id as string;
   const [videoDetail, setVideoDetail] = useState<any>(null);
   const [relatedVideos, setRelatedVideos] = useState<any[]>([]);
   const [comments, setComments] = useState<any[]>([]);
@@ -78,13 +81,13 @@ export default function Watch() {
               {/* Channel Info */}
               <div className="flex items-center justify-between w-full xl:w-auto">
                 <div className="flex items-center gap-4">
-                  <Link to={`/channel/${snippet.channelId}`}>
+                  <Link href={`/channel/${snippet.channelId}`}>
                     <div className="w-10 h-10 rounded-full bg-[#333] flex items-center justify-center font-bold text-lg hover:opacity-80 transition-opacity">
                       {snippet.channelTitle.charAt(0)}
                     </div>
                   </Link>
                   <div className="min-w-0 pr-4">
-                    <Link to={`/channel/${snippet.channelId}`}>
+                    <Link href={`/channel/${snippet.channelId}`}>
                       <h2 className="font-semibold text-[15px] hover:text-[#aaaaaa] transition-colors truncate">{snippet.channelTitle}</h2>
                     </Link>
                     <p className="text-xs text-[#aaaaaa]">Subscribers hidden</p>
@@ -157,7 +160,7 @@ export default function Watch() {
                   const commentData = comment.snippet.topLevelComment.snippet;
                   return (
                     <div key={index} className="flex gap-4">
-                      <Link to={`/channel/${commentData.authorChannelId?.value || ''}`}>
+                      <Link href={`/channel/${commentData.authorChannelId?.value || ''}`}>
                         <img 
                           src={commentData.authorProfileImageUrl} 
                           alt=""
@@ -166,7 +169,7 @@ export default function Watch() {
                       </Link>
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2 mb-1">
-                          <Link to={`/channel/${commentData.authorChannelId?.value || ''}`}>
+                          <Link href={`/channel/${commentData.authorChannelId?.value || ''}`}>
                             <span className="font-medium text-sm text-white hover:text-[#aaaaaa] transition-colors">
                               {commentData.authorDisplayName}
                             </span>

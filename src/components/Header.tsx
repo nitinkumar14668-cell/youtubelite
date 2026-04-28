@@ -1,15 +1,17 @@
+"use client";
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Search, Menu, Video, Bell, User, Mic } from 'lucide-react';
 
 export default function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
   const [searchTerm, setSearchTerm] = useState('');
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm) {
-      navigate(`/search/${searchTerm}`);
+      router.push(`/search/${searchTerm}`);
     }
   };
 
@@ -23,7 +25,7 @@ export default function Header({ toggleSidebar }: { toggleSidebar: () => void })
         >
           <Menu className="w-6 h-6" />
         </button>
-        <Link to="/" className="flex items-center gap-1">
+        <Link href="/" className="flex items-center gap-1">
           <div className="bg-red-600 text-white p-1 rounded-lg">
             <Video className="w-5 h-5" />
           </div>

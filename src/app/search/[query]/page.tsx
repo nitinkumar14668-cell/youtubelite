@@ -1,11 +1,13 @@
+"use client";
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { fetchFromAPI } from '../services/youtube';
-import VideoCard from '../components/VideoCard';
+import { useParams } from 'next/navigation';
+import { fetchFromAPI } from '../../../services/youtube';
+import VideoCard from '../../../components/VideoCard';
 import { SlidersHorizontal } from 'lucide-react';
 
 export default function Search() {
-  const { query } = useParams();
+  const params = useParams();
+  const query = params?.query as string;
   const [videos, setVideos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
