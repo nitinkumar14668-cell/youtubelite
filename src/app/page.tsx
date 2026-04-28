@@ -31,10 +31,11 @@ export default function Home() {
   }, [loading, loadingMore, nextPageToken]);
 
   const fetchMoreVideos = async () => {
+    if (!nextPageToken || loadingMore) return;
     setLoadingMore(true);
     try {
       const query = selectedCategory === 'All' ? 'trending videos' : `${selectedCategory} videos`;
-      const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video&pageToken=${nextPageToken}`);
+      const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video${nextPageToken ? `&pageToken=${nextPageToken}` : ''}`);
       setVideos(prev => [...prev, ...(data.items || [])]);
       setNextPageToken(data.nextPageToken || null);
     } catch (err: any) {

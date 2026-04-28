@@ -21,16 +21,22 @@ export default function Watch() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [videoRes, relatedRes, commentRes] = await Promise.all([
-          fetchFromAPI(`videos?part=snippet,statistics&id=${encodeURIComponent(id)}`),
-          // search related (using search endpoint because relatedToVideoId has low limits/deprecation in some contexts, but let's use it for lite)
-          fetchFromAPI(`search?part=snippet&relatedToVideoId=${encodeURIComponent(id)}&type=video&maxResults=15`),
-          fetchFromAPI(`commentThreads?part=snippet&videoId=${encodeURIComponent(id)}&maxResults=20`).catch(() => ({ items: [] })) // Ignore comment errors (comments disabled)
+        const videoRes = await fetchFromAPI(`videos?part=snippet,statistics&id=${encodeURIComponent(id)}`);
+        
+        let videoData: any = null;
+        if (videoRes.items && videoRes.items.length > 0) {
+          videoData = videoRes.items[0];
+          setVideoDetail(videoData);
+        }
+
+        // Fetch related videos (using title search as relatedToVideoId is deprecated) and comments in parallel
+        const titleQuery = videoData ? encodeURIComponent(videoData.snippet.title) : 'recommended';
+        
+        const [relatedRes, commentRes] = await Promise.all([
+          fetchFromAPI(`search?part=snippet&q=${titleQuery}&type=video&maxResults=15`).catch(() => ({ items: [] })),
+          fetchFromAPI(`commentThreads?part=snippet&videoId=${encodeURIComponent(id)}&maxResults=20`).catch(() => ({ items: [] }))
         ]);
 
-        if (videoRes.items && videoRes.items.length > 0) {
-          setVideoDetail(videoRes.items[0]);
-        }
         setRelatedVideos(relatedRes.items || []);
         setComments(commentRes.items || []);
       } catch (err) {
