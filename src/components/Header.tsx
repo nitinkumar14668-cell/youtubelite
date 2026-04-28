@@ -59,44 +59,64 @@ export default function Header({ toggleSidebar }: { toggleSidebar: () => void })
     <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-2 bg-[#0f0f0f]">
       {/* Mobile Search View Header */}
       {showMobileSearch ? (
-        <div className="flex items-center w-full gap-2" ref={searchRef}>
-          <button 
-            onClick={() => setShowMobileSearch(false)}
-            className="p-2 hover:bg-[#272727] rounded-full transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <form 
-            onSubmit={handleSubmit}
-            className="flex flex-1 items-center bg-[#222] rounded-full overflow-hidden"
-          >
-            <input
-              type="text"
-              placeholder="Search YouTube Lite"
-              className="w-full bg-transparent focus:outline-none px-4 py-2 text-sm"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              autoFocus
-            />
-            {searchTerm && (
-              <button 
-                type="button" 
-                onClick={() => setSearchTerm('')}
-                className="p-2 hover:text-white text-gray-400"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
+        <div className="fixed inset-0 bg-[#0f0f0f] z-[100] flex flex-col" ref={searchRef}>
+          <div className="flex items-center w-full gap-2 p-2 px-3">
             <button 
-              type="submit" 
-              className="px-4 py-2 bg-[#303030] border-l border-[#404040]"
+              onClick={() => setShowMobileSearch(false)}
+              className="p-2 hover:bg-[#272727] rounded-full transition-colors"
             >
-              <Search className="w-4 h-4 text-gray-300" />
+              <ArrowLeft className="w-6 h-6" />
             </button>
-          </form>
-          <button className="p-2 bg-[#181818] rounded-full">
-            <Mic className="w-5 h-5" />
-          </button>
+            <form 
+              onSubmit={handleSubmit}
+              className="flex flex-1 items-center bg-[#212121] rounded-full overflow-hidden"
+            >
+              <input
+                type="text"
+                placeholder="Search YouTube"
+                className="w-full bg-transparent focus:outline-none px-4 py-2 text-sm text-white"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                autoFocus
+              />
+              {searchTerm && (
+                <button 
+                  type="button" 
+                  onClick={() => setSearchTerm('')}
+                  className="p-2 hover:text-white text-gray-400"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
+            </form>
+            <button className="p-2 bg-[#212121] rounded-full">
+              <Mic className="w-5 h-5" />
+            </button>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto">
+            {searchHistory.map((item, index) => (
+              <div 
+                key={index}
+                onClick={() => handleSearch(item)}
+                className="flex items-center justify-between px-4 py-3 hover:bg-[#272727] cursor-pointer"
+              >
+                <div className="flex items-center gap-4">
+                  <Clock className="w-5 h-5 text-gray-400 shrink-0" />
+                  <span className="text-white text-base">{item}</span>
+                </div>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSearchTerm(item);
+                  }}
+                  className="rotate-45"
+                >
+                  <ArrowLeft className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
         <>

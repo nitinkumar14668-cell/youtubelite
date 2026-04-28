@@ -1,41 +1,120 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { fetchFromAPI } from '../../../services/youtube';
 import VideoCard from '../../../components/VideoCard';
-import { SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal, Loader2 } from 'lucide-react';
+import { motion, useAnimation } from 'motion/react';
+
+const SEARCH_FILTERS = ['All', 'Shorts', 'Unwatched', 'Watched'];
 
 export default function Search() {
   const params = useParams();
-  const query = params?.query as string;
+  const query = decodeURIComponent(params?.query as string || '');
   const [videos, setVideos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState('All');
+  const [refreshing, setRefreshing] = useState(false);
+  
+  // Pull to refresh state
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [startY, setStartY] = useState(0);
+  const [pullRatio, setPullRatio] = useState(0);
+
+  const fetchResults = useCallback(async (isRefresh = false) => {
+    if (!isRefresh) setLoading(true);
+    else setRefreshing(true);
+    
+    try {
+      const type = activeFilter === 'Shorts' ? 'video' : 'video'; // API limitation, fake it
+      const searchQuery = activeFilter === 'Shorts' ? `${query} #shorts` : query;
+      const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(searchQuery)}&type=${type}`);
+      setVideos(data.items || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      if (!isRefresh) setLoading(false);
+      else {
+        setRefreshing(false);
+        setPullRatio(0);
+      }
+    }
+  }, [query, activeFilter]);
 
   useEffect(() => {
-    const fetchResults = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video`);
-        setVideos(data.items || []);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (query) {
       fetchResults();
     }
-  }, [query]);
+  }, [query, fetchResults]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (scrollRef.current && scrollRef.current.scrollTop === 0) {
+      setStartY(e.touches[0].clientY);
+    } else {
+      setStartY(0);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (startY === 0) return;
+    const y = e.touches[0].clientY;
+    const diff = y - startY;
+    if (diff > 0 && scrollRef.current?.scrollTop === 0) {
+      // Prevent overscroll native behavior on mobile
+      if (e.cancelable) e.preventDefault();
+      setPullRatio(Math.min(diff / 100, 1));
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (pullRatio > 0.8 && !refreshing) {
+      fetchResults(true);
+    } else {
+      setPullRatio(0);
+    }
+    setStartY(0);
+  };
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 custom-scrollbar bg-[#0f0f0f]">
+    <div 
+      className="flex-1 overflow-y-auto px-4 sm:px-8 py-2 sm:py-6 custom-scrollbar bg-[#0f0f0f] relative"
+      ref={scrollRef}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Pull to refresh visual */}
+      <div 
+        className="absolute top-0 left-0 right-0 flex justify-center items-center overflow-hidden transition-all duration-200"
+        style={{ height: `${pullRatio * 60}px`, opacity: pullRatio }}
+      >
+        <Loader2 className={`w-6 h-6 text-white ${refreshing ? 'animate-spin' : ''}`} style={{ transform: `rotate(${pullRatio * 360}deg)` }} />
+      </div>
+
       <div className="max-w-[1096px] mx-auto">
-        <button className="flex items-center gap-2 mb-6 hover:bg-[#272727] py-1.5 px-3 rounded-full transition-colors text-sm font-medium ml-auto">
-          <SlidersHorizontal className="w-4 h-4" />
-          Filters
-        </button>
+        <div className="flex items-center gap-2 mb-4 overflow-x-auto hide-scrollbar-on-mobile pb-2 sticky top-0 bg-[#0f0f0f] z-10 sm:static sm:pb-0 pt-2 sm:pt-0">
+          <button className="hidden sm:flex items-center gap-2 hover:bg-[#272727] py-1.5 px-3 rounded-full transition-colors text-sm font-medium mr-2 shrink-0">
+            <SlidersHorizontal className="w-4 h-4" />
+            Filters
+          </button>
+          
+          <div className="flex items-center gap-3 w-full sm:hidden shrink-0 mb-1">
+             <SlidersHorizontal className="w-5 h-5 ml-1" />
+             {SEARCH_FILTERS.map(filter => (
+              <button
+                key={filter}
+                onClick={() => setActiveFilter(filter)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors border max-h-8 flex items-center justify-center shrink-0 ${
+                  activeFilter === filter 
+                  ? 'bg-white text-black border-transparent' 
+                  : 'bg-[#272727] text-white hover:bg-[#3f3f3f] border-[#3f3f3f]'
+                }`}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
+        </div>
         
         {loading ? (
           <div className="w-full flex justify-center py-10">

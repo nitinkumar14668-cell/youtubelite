@@ -15,22 +15,13 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [error, setError] = useState<string | null>(null);
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [startY, setStartY] = useState(0);
+  const [pullRatio, setPullRatio] = useState(0);
   const observer = useRef<IntersectionObserver | null>(null);
 
-  const lastVideoElementRef = useCallback((node: HTMLDivElement) => {
-    if (loading || loadingMore) return;
-    if (observer.current) observer.current.disconnect();
-    
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && nextPageToken) {
-        fetchMoreVideos();
-      }
-    });
-    
-    if (node) observer.current.observe(node);
-  }, [loading, loadingMore, nextPageToken]);
-
-  const fetchMoreVideos = async () => {
+  const fetchMoreVideos = useCallback(async () => {
     if (!nextPageToken || loadingMore) return;
     setLoadingMore(true);
     try {
@@ -43,10 +34,24 @@ export default function Home() {
     } finally {
       setLoadingMore(false);
     }
-  };
+  }, [nextPageToken, loadingMore, selectedCategory]);
 
-  const fetchVideos = useCallback(async () => {
-    setLoading(true);
+  const lastVideoElementRef = useCallback((node: HTMLDivElement) => {
+    if (loading || loadingMore) return;
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && nextPageToken) {
+        fetchMoreVideos();
+      }
+    });
+    
+    if (node) observer.current.observe(node);
+  }, [loading, loadingMore, nextPageToken, fetchMoreVideos]);
+
+  const fetchVideos = useCallback(async (isRefresh = false) => {
+    if (!isRefresh) setLoading(true);
+    else setRefreshing(true);
     setError(null);
     setNextPageToken(null);
     try {
@@ -63,7 +68,11 @@ export default function Home() {
         setError(err.message || 'Failed to load videos. Make sure your API key is correctly set.');
       }
     } finally {
-      setLoading(false);
+      if (!isRefresh) setLoading(false);
+      else {
+        setRefreshing(false);
+        setPullRatio(0);
+      }
     }
   }, [selectedCategory]);
 
@@ -71,8 +80,50 @@ export default function Home() {
     fetchVideos();
   }, [fetchVideos]);
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (scrollRef.current && scrollRef.current.scrollTop === 0) {
+      setStartY(e.touches[0].clientY);
+    } else {
+      setStartY(0);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (startY === 0) return;
+    const y = e.touches[0].clientY;
+    const diff = y - startY;
+    if (diff > 0 && scrollRef.current?.scrollTop === 0) {
+      if (e.cancelable) e.preventDefault();
+      setPullRatio(Math.min(diff / 100, 1));
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (pullRatio > 0.8 && !refreshing) {
+      fetchVideos(true);
+    } else {
+      setPullRatio(0);
+    }
+    setStartY(0);
+  };
+
   return (
-    <div className="flex-1 overflow-y-auto px-4 sm:px-6 custom-scrollbar bg-[#0f0f0f]">
+    <div 
+      className="flex-1 overflow-y-auto px-4 sm:px-6 custom-scrollbar bg-[#0f0f0f] relative"
+      ref={scrollRef}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Pull to refresh visual */}
+      <div 
+        className="absolute top-0 left-0 right-0 flex justify-center items-center overflow-hidden transition-all duration-200 z-10"
+        style={{ height: `${pullRatio * 60}px`, opacity: pullRatio }}
+      >
+        <div className={`w-8 h-8 rounded-full bg-[#272727] flex items-center justify-center shadow-lg ${refreshing ? 'animate-spin' : ''}`} style={{ transform: `rotate(${pullRatio * 360}deg)` }}>
+          <div className="w-5 h-5 border-2 border-white border-t-transparent flex rounded-full" />
+        </div>
+      </div>
       {/* Category Pills */}
       <div className="sticky top-0 z-40 bg-[#0f0f0f]/95 backdrop-blur py-3 flex gap-3 overflow-x-auto custom-scrollbar border-b border-transparent">
         {categories.map((cat) => (
