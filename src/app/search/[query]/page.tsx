@@ -15,7 +15,7 @@ export default function Search() {
     const fetchResults = async () => {
       setLoading(true);
       try {
-        const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${query}&type=video`);
+        const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video`);
         setVideos(data.items || []);
       } catch (err) {
         console.error(err);

@@ -34,7 +34,7 @@ export default function Home() {
     setLoadingMore(true);
     try {
       const query = selectedCategory === 'All' ? 'trending videos' : `${selectedCategory} videos`;
-      const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${query}&type=video&pageToken=${nextPageToken}`);
+      const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video&pageToken=${nextPageToken}`);
       setVideos(prev => [...prev, ...(data.items || [])]);
       setNextPageToken(data.nextPageToken || null);
     } catch (err: any) {
@@ -51,7 +51,7 @@ export default function Home() {
       setNextPageToken(null);
       try {
         const query = selectedCategory === 'All' ? 'trending videos' : `${selectedCategory} videos`;
-        const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${query}&type=video`);
+        const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video`);
         setVideos(data.items || []);
         setNextPageToken(data.nextPageToken || null);
       } catch (err: any) {

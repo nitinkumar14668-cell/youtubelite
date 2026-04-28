@@ -22,10 +22,10 @@ export default function Watch() {
       setLoading(true);
       try {
         const [videoRes, relatedRes, commentRes] = await Promise.all([
-          fetchFromAPI(`videos?part=snippet,statistics&id=${id}`),
+          fetchFromAPI(`videos?part=snippet,statistics&id=${encodeURIComponent(id)}`),
           // search related (using search endpoint because relatedToVideoId has low limits/deprecation in some contexts, but let's use it for lite)
-          fetchFromAPI(`search?part=snippet&relatedToVideoId=${id}&type=video&maxResults=15`),
-          fetchFromAPI(`commentThreads?part=snippet&videoId=${id}&maxResults=20`).catch(() => ({ items: [] })) // Ignore comment errors (comments disabled)
+          fetchFromAPI(`search?part=snippet&relatedToVideoId=${encodeURIComponent(id)}&type=video&maxResults=15`),
+          fetchFromAPI(`commentThreads?part=snippet&videoId=${encodeURIComponent(id)}&maxResults=20`).catch(() => ({ items: [] })) // Ignore comment errors (comments disabled)
         ]);
 
         if (videoRes.items && videoRes.items.length > 0) {

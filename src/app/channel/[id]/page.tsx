@@ -15,10 +15,10 @@ export default function Channel() {
     const fetchResults = async () => {
       setLoading(true);
       try {
-        const channelData = await fetchFromAPI(`channels?part=snippet,statistics&id=${id}`);
+        const channelData = await fetchFromAPI(`channels?part=snippet,statistics&id=${encodeURIComponent(id)}`);
         setChannelDetail(channelData?.items?.[0]);
 
-        const videosData = await fetchFromAPI(`search?channelId=${id}&part=snippet&order=date&maxResults=20`);
+        const videosData = await fetchFromAPI(`search?channelId=${encodeURIComponent(id)}&part=snippet&order=date&maxResults=20`);
         setVideos(videosData?.items || []);
       } catch (error) {
         console.error("Error fetching channel details:", error);
