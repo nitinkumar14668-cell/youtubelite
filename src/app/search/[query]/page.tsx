@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { fetchFromAPI } from '../../../services/youtube';
 import VideoCard from '../../../components/VideoCard';
+import DummyAd from '../../../components/DummyAd';
 import { SlidersHorizontal, Loader2 } from 'lucide-react';
 import { motion, useAnimation } from 'motion/react';
 
@@ -123,7 +124,12 @@ export default function Search() {
         ) : (
           <div className="flex flex-col sm:gap-4 pb-20">
             {videos.map((video, idx) => (
-              <VideoCard key={idx} video={video} layout="search" />
+              <React.Fragment key={idx}>
+                {idx > 0 && idx % 4 === 2 && (
+                  <DummyAd layout="search" />
+                )}
+                <VideoCard video={video} layout="search" />
+              </React.Fragment>
             ))}
           </div>
         )}

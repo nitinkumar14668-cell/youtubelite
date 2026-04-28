@@ -6,6 +6,8 @@ import ReactPlayer from 'react-player';
 const Player: any = ReactPlayer;
 import { fetchFromAPI } from '../../../services/youtube';
 import VideoCard from '../../../components/VideoCard';
+import DummyAd from '../../../components/DummyAd';
+import VideoOverlayAd from '../../../components/VideoOverlayAd';
 import { ThumbsUp, ThumbsDown, Share2, Download, MoreHorizontal, MessageSquare } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -16,6 +18,7 @@ export default function Watch() {
   const [relatedVideos, setRelatedVideos] = useState<any[]>([]);
   const [comments, setComments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showOverlayAd, setShowOverlayAd] = useState(true);
 
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(true);
 
@@ -73,12 +76,13 @@ export default function Watch() {
         {/* Left Side: Video & Details */}
         <div className="flex-1 min-w-0">
           <div className="w-full aspect-video bg-black sm:rounded-xl overflow-hidden sticky top-0 z-10 sm:relative">
+            {showOverlayAd && <VideoOverlayAd onSkip={() => setShowOverlayAd(false)} />}
             <Player 
               url={`https://www.youtube.com/watch?v=${id}`} 
               controls 
               width="100%" 
               height="100%" 
-              playing={true}
+              playing={!showOverlayAd}
             />
           </div>
           
@@ -200,7 +204,12 @@ export default function Watch() {
         <div className="w-full xl:w-[400px] shrink-0 px-4 sm:px-0 mt-2 xl:mt-0 pb-10">
           <div className="flex flex-col gap-3">
             {relatedVideos.map((video, idx) => (
-              <VideoCard key={idx} video={video} layout="row" />
+              <React.Fragment key={idx}>
+                {idx > 0 && idx % 5 === 2 && (
+                  <DummyAd layout="row" />
+                )}
+                <VideoCard video={video} layout="row" />
+              </React.Fragment>
             ))}
           </div>
         </div>

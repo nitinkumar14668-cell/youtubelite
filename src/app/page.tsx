@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { fetchFromAPI } from '../services/youtube';
 import VideoCard from '../components/VideoCard';
+import DummyAd from '../components/DummyAd';
 import { Compass } from 'lucide-react';
 
 const categories = [
@@ -181,14 +182,25 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-x-4 sm:gap-y-10">
             {videos.map((video, idx) => {
-              if (videos.length === idx + 1) {
+              const isLast = videos.length === idx + 1;
+              const ad = idx > 0 && idx % 6 === 3 ? <DummyAd layout="grid" /> : null;
+
+              if (isLast) {
                 return (
-                  <div ref={lastVideoElementRef} key={idx}>
-                    <VideoCard video={video} />
-                  </div>
+                  <React.Fragment key={idx}>
+                    {ad}
+                    <div ref={lastVideoElementRef}>
+                      <VideoCard video={video} />
+                    </div>
+                  </React.Fragment>
                 );
               } else {
-                return <VideoCard key={idx} video={video} />;
+                return (
+                  <React.Fragment key={idx}>
+                    {ad}
+                    <VideoCard video={video} />
+                  </React.Fragment>
+                );
               }
             })}
           </div>
