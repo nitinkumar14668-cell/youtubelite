@@ -121,9 +121,9 @@ export default function Search() {
             <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:gap-4 pb-20">
             {videos.map((video, idx) => (
-              <VideoCard key={idx} video={video} layout="row" />
+              <VideoCard key={idx} video={video} layout="search" />
             ))}
           </div>
         )}
