@@ -17,6 +17,8 @@ export default function Watch() {
   const [comments, setComments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(true);
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -132,14 +134,28 @@ export default function Watch() {
             </div>
 
             {/* Description Box */}
-            <div className="mt-4 bg-[#272727] hover:bg-[#3f3f3f] cursor-pointer rounded-xl p-3 text-sm transition-colors">
+            <div 
+              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+              className="mt-4 bg-[#272727] hover:bg-[#3f3f3f] cursor-pointer rounded-xl p-3 text-sm transition-colors relative"
+            >
               <div className="font-semibold flex gap-2">
-                <span>{Intl.NumberFormat('en-US').format(statistics.viewCount)} views</span>
+                <span>{Intl.NumberFormat('en-US').format(statistics.viewCount || 0)} views</span>
                 <span>{formatDistanceToNow(new Date(snippet.publishedAt), { addSuffix: true })}</span>
               </div>
-              <p className="mt-2 text-[#e5e5e5] whitespace-pre-wrap line-clamp-3">
+              <p className={`mt-2 text-[#e5e5e5] whitespace-pre-wrap ${!isDescriptionExpanded ? 'line-clamp-3' : ''}`}>
                 {snippet.description}
               </p>
+              {snippet.description && snippet.description.length > 150 && (
+                <button 
+                  className="mt-2 font-semibold text-white hover:underline focus:outline-none"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsDescriptionExpanded(!isDescriptionExpanded);
+                  }}
+                >
+                  {isDescriptionExpanded ? 'Show less' : 'Show more'}
+                </button>
+              )}
             </div>
 
             {/* Comments Section */}
