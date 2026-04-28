@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 
+import { motion } from 'motion/react';
+
 interface VideoCardProps {
   video: any;
   layout?: 'grid' | 'row';
@@ -35,9 +37,10 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
   };
 
   return (
-    <div 
+    <motion.div 
       onClick={handleCardClick}
-      className={`group flex ${isRow ? 'flex-row gap-2 sm:gap-4' : 'flex-col gap-3'} w-full transition-transform cursor-pointer`}
+      whileTap={{ scale: 0.98 }}
+      className={`group flex ${isRow ? 'flex-row gap-2 sm:gap-4' : 'flex-col gap-3'} w-full transition-transform cursor-pointer relative`}
     >
       <div className={`relative overflow-hidden transition-all duration-300 rounded-xl group-hover:rounded-none ${isRow ? 'w-40 sm:w-48 shrink-0' : 'w-full'}`}>
         <img 
@@ -85,6 +88,6 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
