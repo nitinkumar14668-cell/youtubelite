@@ -18,7 +18,7 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
   const channelTitle = video.snippet?.channelTitle || '';
   const publishTime = video.snippet?.publishedAt || video.snippet?.publishTime;
   const thumbnails = video.snippet?.thumbnails || {};
-  const thumbnail = thumbnails.maxres?.url || thumbnails.high?.url || thumbnails.medium?.url;
+  const thumbnail = thumbnails.maxres?.url || thumbnails.high?.url || thumbnails.medium?.url || thumbnails.default?.url || 'https://via.placeholder.com/640x360.png?text=No+Thumbnail';
   
   // Fake views for when API doesn't return statistics in search
   const views = video.statistics?.viewCount 
@@ -30,13 +30,13 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
   return (
     <Link 
       to={`/watch/${videoId}`}
-      className={`group flex ${isRow ? 'flex-row gap-4' : 'flex-col gap-3'} w-full transition-transform`}
+      className={`group flex ${isRow ? 'flex-row gap-2 sm:gap-4' : 'flex-col gap-3'} w-full transition-transform`}
     >
-      <div className={`relative ${isRow ? 'w-40 sm:w-60 shrink-0' : 'w-full'}`}>
+      <div className={`relative ${isRow ? 'w-40 sm:w-48 shrink-0' : 'w-full'}`}>
         <img 
           src={thumbnail} 
           alt={title}
-          className={`w-full bg-[#222] object-cover ${isRow ? 'rounded-xl h-24 sm:h-36' : 'rounded-xl aspect-video'}`}
+          className={`w-full bg-[#222] object-cover ${isRow ? 'rounded-xl h-24 sm:h-28' : 'rounded-xl aspect-video'}`}
         />
         {/* Timestamp placeholder */}
         <div className="absolute bottom-1 right-1 bg-black/80 px-1.5 py-0.5 rounded text-xs font-medium">
@@ -47,9 +47,11 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
       <div className={`flex gap-3 ${isRow ? 'flex-1 py-1' : ''}`}>
         {!isRow && (
           <div className="shrink-0 pt-0.5">
-            <div className="w-9 h-9 rounded-full bg-[#333] flex items-center justify-center text-sm">
-              {channelTitle.charAt(0).toUpperCase()}
-            </div>
+            <Link to={video.snippet?.channelId ? `/channel/${video.snippet.channelId}` : '#'} onClick={(e) => { if(!video.snippet?.channelId) e.preventDefault(); e.stopPropagation(); }}>
+              <div className="w-9 h-9 rounded-full bg-[#333] flex items-center justify-center text-sm hover:opacity-80 transition-opacity">
+                {channelTitle.charAt(0).toUpperCase()}
+              </div>
+            </Link>
           </div>
         )}
         
@@ -59,7 +61,9 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
             dangerouslySetInnerHTML={{ __html: title }}
           />
           <div className={`text-sm text-[#aaaaaa] flex ${isRow ? 'flex-col sm:flex-row sm:items-center' : 'flex-col'} mt-0.5`}>
-            <div className="hover:text-white transition-colors">{channelTitle}</div>
+            <Link to={video.snippet?.channelId ? `/channel/${video.snippet.channelId}` : '#'} className="hover:text-white transition-colors block" onClick={(e) => { if(!video.snippet?.channelId) e.preventDefault(); e.stopPropagation(); }}>
+              {channelTitle}
+            </Link>
             <div className={`flex items-center ${isRow ? 'sm:before:content-["•"] sm:before:mx-1 shadow-sm' : ''}`}>
               <span>{views} views</span>
               <span className="mx-1">•</span>

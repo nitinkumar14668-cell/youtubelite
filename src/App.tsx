@@ -10,6 +10,7 @@ import Sidebar from './components/Sidebar';
 import Home from './pages/Home';
 import Search from './pages/Search';
 import Watch from './pages/Watch';
+import Channel from './pages/Channel';
 
 export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/search/:query" element={<Search />} />
             <Route path="/watch/:id" element={<Watch />} />
+            <Route path="/channel/:id" element={<Channel />} />
           </Routes>
         </div>
       </div>

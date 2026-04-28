@@ -13,6 +13,9 @@ export const fetchFromAPI = async (url: string) => {
     const response = await fetch(requestUrl);
     
     if (!response.ok) {
+      if (response.status === 403) {
+        throw new Error("YouTube API quota exceeded or API key is invalid.");
+      }
       const errorData = await response.json();
       console.error("YouTube API Error:", errorData);
       throw new Error(errorData.error?.message || 'Failed to fetch from YouTube API');

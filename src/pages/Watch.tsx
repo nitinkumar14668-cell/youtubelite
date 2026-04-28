@@ -74,23 +74,29 @@ export default function Watch() {
           <div className="py-4 px-4 sm:px-0">
             <h1 className="text-xl sm:text-2xl font-bold mb-3">{snippet.title}</h1>
             
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
               {/* Channel Info */}
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-[#333] flex items-center justify-center font-bold text-lg">
-                  {snippet.channelTitle.charAt(0)}
+              <div className="flex items-center justify-between w-full xl:w-auto">
+                <div className="flex items-center gap-4">
+                  <Link to={`/channel/${snippet.channelId}`}>
+                    <div className="w-10 h-10 rounded-full bg-[#333] flex items-center justify-center font-bold text-lg hover:opacity-80 transition-opacity">
+                      {snippet.channelTitle.charAt(0)}
+                    </div>
+                  </Link>
+                  <div className="min-w-0 pr-4">
+                    <Link to={`/channel/${snippet.channelId}`}>
+                      <h2 className="font-semibold text-[15px] hover:text-[#aaaaaa] transition-colors truncate">{snippet.channelTitle}</h2>
+                    </Link>
+                    <p className="text-xs text-[#aaaaaa]">Subscribers hidden</p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="font-semibold text-[15px]">{snippet.channelTitle}</h2>
-                  <p className="text-xs text-[#aaaaaa]">Subscribers hidden</p>
-                </div>
-                <button className="bg-white text-black px-4 py-2 rounded-full font-semibold text-sm hover:bg-gray-200 ml-2">
+                <button className="bg-white text-black px-4 py-2 rounded-full font-semibold text-sm hover:bg-gray-200 shrink-0">
                   Subscribe
                 </button>
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
+              <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 sm:pb-0 hide-scrollbar-on-mobile w-full xl:w-auto">
                 <div className="flex items-center bg-[#272727] rounded-full overflow-hidden shrink-0">
                   <button className="flex items-center gap-2 px-4 py-2 hover:bg-[#3f3f3f] border-r border-[#3f3f3f]">
                     <ThumbsUp className="w-4 h-4" />
@@ -151,16 +157,20 @@ export default function Watch() {
                   const commentData = comment.snippet.topLevelComment.snippet;
                   return (
                     <div key={index} className="flex gap-4">
-                      <img 
-                        src={commentData.authorProfileImageUrl} 
-                        alt=""
-                        className="w-10 h-10 rounded-full shrink-0 bg-[#272727]"
-                      />
+                      <Link to={`/channel/${commentData.authorChannelId?.value || ''}`}>
+                        <img 
+                          src={commentData.authorProfileImageUrl} 
+                          alt=""
+                          className="w-10 h-10 rounded-full shrink-0 bg-[#272727] hover:opacity-80 transition-opacity"
+                        />
+                      </Link>
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-sm text-white">
-                            {commentData.authorDisplayName}
-                          </span>
+                          <Link to={`/channel/${commentData.authorChannelId?.value || ''}`}>
+                            <span className="font-medium text-sm text-white hover:text-[#aaaaaa] transition-colors">
+                              {commentData.authorDisplayName}
+                            </span>
+                          </Link>
                           <span className="text-xs text-[#aaaaaa]">
                             {formatDistanceToNow(new Date(commentData.publishedAt), { addSuffix: true })}
                           </span>
@@ -191,7 +201,7 @@ export default function Watch() {
         </div>
 
         {/* Right Side: Related Videos */}
-        <div className="w-full xl:w-[400px] shrink-0 px-4 sm:px-0">
+        <div className="w-full xl:w-[400px] shrink-0 px-4 sm:px-0 mt-6 xl:mt-0 pb-10">
           <div className="flex flex-col gap-3">
             {relatedVideos.map((video, idx) => (
               <VideoCard key={idx} video={video} layout="row" />

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { fetchFromAPI } from '../services/youtube';
 import VideoCard from '../components/VideoCard';
 import { Compass } from 'lucide-react';
@@ -10,19 +10,49 @@ const categories = [
 export default function Home() {
   const [videos, setVideos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [error, setError] = useState<string | null>(null);
+  const [nextPageToken, setNextPageToken] = useState<string | null>(null);
+  const observer = useRef<IntersectionObserver | null>(null);
+
+  const lastVideoElementRef = useCallback((node: HTMLDivElement) => {
+    if (loading || loadingMore) return;
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && nextPageToken) {
+        fetchMoreVideos();
+      }
+    });
+    
+    if (node) observer.current.observe(node);
+  }, [loading, loadingMore, nextPageToken]);
+
+  const fetchMoreVideos = async () => {
+    setLoadingMore(true);
+    try {
+      const query = selectedCategory === 'All' ? 'trending videos' : `${selectedCategory} videos`;
+      const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${query}&type=video&pageToken=${nextPageToken}`);
+      setVideos(prev => [...prev, ...(data.items || [])]);
+      setNextPageToken(data.nextPageToken || null);
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   useEffect(() => {
     const fetchVideos = async () => {
       setLoading(true);
       setError(null);
+      setNextPageToken(null);
       try {
         const query = selectedCategory === 'All' ? 'trending videos' : `${selectedCategory} videos`;
         const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${query}&type=video`);
-        // Searching doesn't give us views/likes directly, we'd need another query to 'videos' endpoint,
-        // but for a lite version, we fallback to random in VideoCard or fetch them if needed.
         setVideos(data.items || []);
+        setNextPageToken(data.nextPageToken || null);
       } catch (err: any) {
         setError(err.message || 'Failed to load videos. Make sure your API key is correctly set in .env');
       } finally {
@@ -59,6 +89,9 @@ export default function Home() {
             <div>
               <h3 className="font-semibold mb-1">Configuration Needed</h3>
               <p className="text-sm">{error}</p>
+              <div className="mt-2 text-xs text-red-300">
+                Create a YouTube Data API v3 key at <a href="https://console.cloud.google.com" target="_blank" rel="noreferrer" className="underline hover:text-white">Google Cloud Console</a> and add it to your environment variables as VITE_YOUTUBE_API_KEY.
+              </div>
             </div>
           </div>
         )}
@@ -80,9 +113,23 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-x-4 sm:gap-y-10">
-            {videos.map((video, idx) => (
-              <VideoCard key={idx} video={video} />
-            ))}
+            {videos.map((video, idx) => {
+              if (videos.length === idx + 1) {
+                return (
+                  <div ref={lastVideoElementRef} key={idx}>
+                    <VideoCard video={video} />
+                  </div>
+                );
+              } else {
+                return <VideoCard key={idx} video={video} />;
+              }
+            })}
+          </div>
+        )}
+        
+        {loadingMore && (
+          <div className="w-full flex justify-center py-6 mt-4">
+            <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
       </div>
