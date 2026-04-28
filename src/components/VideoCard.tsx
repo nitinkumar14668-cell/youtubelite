@@ -39,14 +39,14 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
       onClick={handleCardClick}
       className={`group flex ${isRow ? 'flex-row gap-2 sm:gap-4' : 'flex-col gap-3'} w-full transition-transform cursor-pointer`}
     >
-      <div className={`relative ${isRow ? 'w-40 sm:w-48 shrink-0' : 'w-full'}`}>
+      <div className={`relative overflow-hidden transition-all duration-300 rounded-xl group-hover:rounded-none ${isRow ? 'w-40 sm:w-48 shrink-0' : 'w-full'}`}>
         <img 
           src={thumbnail} 
           alt={title}
-          className={`w-full bg-[#222] object-cover ${isRow ? 'rounded-xl h-24 sm:h-28' : 'rounded-xl aspect-video'}`}
+          className={`w-full bg-[#222] object-cover transition-transform duration-300 group-hover:scale-105 ${isRow ? 'h-24 sm:h-28' : 'aspect-video'}`}
         />
         {/* Timestamp placeholder */}
-        <div className="absolute bottom-1 right-1 bg-black/80 px-1.5 py-0.5 rounded text-xs font-medium">
+        <div className="absolute bottom-1 right-1 bg-black/80 px-1.5 py-0.5 rounded text-xs font-medium transition-opacity duration-300 group-hover:opacity-0">
           {Math.floor(Math.random() * 20 + 2)}:{Math.floor(Math.random() * 50 + 10)}
         </div>
       </div>
