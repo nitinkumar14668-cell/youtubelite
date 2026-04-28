@@ -91,7 +91,7 @@ export default function Home() {
               <h3 className="font-semibold mb-1">Configuration Needed</h3>
               <p className="text-sm">{error}</p>
               <div className="mt-2 text-xs text-red-300">
-                Create a YouTube Data API v3 key at <a href="https://console.cloud.google.com" target="_blank" rel="noreferrer" className="underline hover:text-white">Google Cloud Console</a> and add it to your environment variables as VITE_YOUTUBE_API_KEY.
+                Create a YouTube Data API v3 key at <a href="https://console.cloud.google.com" target="_blank" rel="noreferrer" className="underline hover:text-white">Google Cloud Console</a> and add it to your environment variables as NEXT_PUBLIC_YOUTUBE_API_KEY.
               </div>
             </div>
           </div>

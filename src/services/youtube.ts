@@ -3,7 +3,7 @@ const BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
 export const fetchFromAPI = async (url: string) => {
   if (!API_KEY) {
-    throw new Error("YouTube API key is missing. Please set VITE_YOUTUBE_API_KEY.");
+    throw new Error("YouTube API key is missing. Please set NEXT_PUBLIC_YOUTUBE_API_KEY.");
   }
   
   const separator = url.includes('?') ? '&' : '?';
