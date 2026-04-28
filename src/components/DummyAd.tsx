@@ -6,9 +6,7 @@ const AD_MESSAGES = [
   "Install Now",
   "Limited Offer",
   "Try Premium",
-  "Best Deal",
-  "Subscribe Today",
-  "Get 50% Off"
+  "Best Deal"
 ];
 
 export default function DummyAd({ layout = 'grid' }: { layout?: 'grid' | 'row' | 'search' }) {

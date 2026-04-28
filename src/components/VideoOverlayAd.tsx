@@ -20,7 +20,7 @@ export default function VideoOverlayAd({ onSkip }: { onSkip: () => void }) {
   useEffect(() => {
     const msgTimer = setInterval(() => {
       setMessageIndex(prev => (prev + 1) % messages.length);
-    }, 4000);
+    }, 10000 + Math.random() * 5000);
     return () => clearInterval(msgTimer);
   }, [messages.length]);
 
