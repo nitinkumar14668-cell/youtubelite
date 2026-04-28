@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 
 interface VideoCardProps {
@@ -9,6 +9,7 @@ interface VideoCardProps {
 
 export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
   const isRow = layout === 'row';
+  const navigate = useNavigate();
   // Sometimes API returns search endpoint results where id is an object
   const videoId = typeof video.id === 'string' ? video.id : video.id?.videoId;
   
@@ -27,10 +28,14 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
 
   const timeAgo = publishTime ? formatDistanceToNow(new Date(publishTime), { addSuffix: true }) : '';
 
+  const handleCardClick = () => {
+    navigate(`/watch/${videoId}`);
+  };
+
   return (
-    <Link 
-      to={`/watch/${videoId}`}
-      className={`group flex ${isRow ? 'flex-row gap-2 sm:gap-4' : 'flex-col gap-3'} w-full transition-transform`}
+    <div 
+      onClick={handleCardClick}
+      className={`group flex ${isRow ? 'flex-row gap-2 sm:gap-4' : 'flex-col gap-3'} w-full transition-transform cursor-pointer`}
     >
       <div className={`relative ${isRow ? 'w-40 sm:w-48 shrink-0' : 'w-full'}`}>
         <img 
@@ -47,7 +52,7 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
       <div className={`flex gap-3 ${isRow ? 'flex-1 py-1' : ''}`}>
         {!isRow && (
           <div className="shrink-0 pt-0.5">
-            <Link to={video.snippet?.channelId ? `/channel/${video.snippet.channelId}` : '#'} onClick={(e) => { if(!video.snippet?.channelId) e.preventDefault(); e.stopPropagation(); }}>
+            <Link to={video.snippet?.channelId ? `/channel/${video.snippet.channelId}` : '#'} onClick={(e) => { e.stopPropagation(); if(!video.snippet?.channelId) e.preventDefault(); }}>
               <div className="w-9 h-9 rounded-full bg-[#333] flex items-center justify-center text-sm hover:opacity-80 transition-opacity">
                 {channelTitle.charAt(0).toUpperCase()}
               </div>
@@ -61,7 +66,7 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
             dangerouslySetInnerHTML={{ __html: title }}
           />
           <div className={`text-sm text-[#aaaaaa] flex ${isRow ? 'flex-col sm:flex-row sm:items-center' : 'flex-col'} mt-0.5`}>
-            <Link to={video.snippet?.channelId ? `/channel/${video.snippet.channelId}` : '#'} className="hover:text-white transition-colors block" onClick={(e) => { if(!video.snippet?.channelId) e.preventDefault(); e.stopPropagation(); }}>
+            <Link to={video.snippet?.channelId ? `/channel/${video.snippet.channelId}` : '#'} className="hover:text-white transition-colors block" onClick={(e) => { e.stopPropagation(); if(!video.snippet?.channelId) e.preventDefault(); }}>
               {channelTitle}
             </Link>
             <div className={`flex items-center ${isRow ? 'sm:before:content-["•"] sm:before:mx-1 shadow-sm' : ''}`}>
@@ -78,6 +83,6 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
           )}
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
