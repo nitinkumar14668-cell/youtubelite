@@ -45,25 +45,31 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    const fetchVideos = async () => {
-      setLoading(true);
-      setError(null);
-      setNextPageToken(null);
-      try {
-        const query = selectedCategory === 'All' ? 'trending videos' : `${selectedCategory} videos`;
-        const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video`);
-        setVideos(data.items || []);
-        setNextPageToken(data.nextPageToken || null);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load videos. Make sure your API key is correctly set in .env');
-      } finally {
-        setLoading(false);
+  const fetchVideos = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    setNextPageToken(null);
+    try {
+      const query = selectedCategory === 'All' ? 'trending videos' : `${selectedCategory} videos`;
+      const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video`);
+      setVideos(data.items || []);
+      setNextPageToken(data.nextPageToken || null);
+    } catch (err: any) {
+      if (err?.message?.toLowerCase().includes('quota')) {
+        setError('YouTube API Quota Exceeded. Please try again later or verify your billing/quota in Google Cloud Console.');
+      } else if (err?.message?.toLowerCase().includes('invalid argument')) {
+        setError('Invalid API request argument or API key. Please check your configuration.');
+      } else {
+        setError(err.message || 'Failed to load videos. Make sure your API key is correctly set.');
       }
-    };
-
-    fetchVideos();
+    } finally {
+      setLoading(false);
+    }
   }, [selectedCategory]);
+
+  useEffect(() => {
+    fetchVideos();
+  }, [fetchVideos]);
 
   return (
     <div className="flex-1 overflow-y-auto px-4 sm:px-6 custom-scrollbar bg-[#0f0f0f]">
@@ -86,13 +92,21 @@ export default function Home() {
 
       <div className="py-6">
         {error && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-start gap-4">
-            <Compass className="w-6 h-6 shrink-0 mt-0.5" />
-            <div>
-              <h3 className="font-semibold mb-1">Configuration Needed</h3>
-              <p className="text-sm">{error}</p>
-              <div className="mt-2 text-xs text-red-300">
-                Create a YouTube Data API v3 key at <a href="https://console.cloud.google.com" target="_blank" rel="noreferrer" className="underline hover:text-white">Google Cloud Console</a> and add it to your environment variables as NEXT_PUBLIC_YOUTUBE_API_KEY.
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+            <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-6 sm:p-8 rounded-2xl max-w-lg w-full flex flex-col items-center gap-4">
+              <Compass className="w-12 h-12 shrink-0 text-red-500/80" />
+              <div>
+                <h3 className="font-semibold text-lg mb-2 text-white">Oops! Something went wrong</h3>
+                <p className="text-sm mb-4 leading-relaxed text-red-200">{error}</p>
+                <div className="text-xs text-stone-400 mb-6 bg-black/40 p-3 rounded-lg border border-white/5">
+                  Check your YouTube Data API v3 key at <a href="https://console.cloud.google.com" target="_blank" rel="noreferrer" className="underline hover:text-white transition-colors">Google Cloud Console</a>. Ensure the key is valid and added to your environment variables as <code>NEXT_PUBLIC_YOUTUBE_API_KEY</code>.
+                </div>
+                <button 
+                  onClick={() => fetchVideos()}
+                  className="px-6 py-2.5 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-medium rounded-full transition-all flex items-center justify-center w-full sm:w-auto mx-auto"
+                >
+                  Retry Fetch
+                </button>
               </div>
             </div>
           </div>
