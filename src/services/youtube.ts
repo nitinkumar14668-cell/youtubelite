@@ -64,8 +64,8 @@ const generateMockData = (url: string) => {
 };
 
 export const fetchFromAPI = async (url: string) => {
-  if (!API_KEY) {
-    console.warn("YouTube API key is missing. Returning mock data.");
+  if (!API_KEY || url.includes('mock_vid_')) {
+    console.warn("YouTube API key is missing or mock ID detected. Returning mock data.");
     return generateMockData(url);
   }
   
@@ -88,12 +88,7 @@ export const fetchFromAPI = async (url: string) => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error fetching from API:", error);
-    // If the error is network related or fetch failed entirely, we optionally fallback to mock data too
-    if (error instanceof TypeError && error.message.includes("fetch")) {
-        console.warn("Network error encountered. Returning mock data.");
-        return generateMockData(url);
-    }
-    throw error;
+    console.error("Error fetching from API, falling back to mock data:", error);
+    return generateMockData(url);
   }
 };
