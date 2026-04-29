@@ -1,6 +1,7 @@
 const API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
+// Mock generation omitted for brevity, but I will keep it for safety.
 const generateMockData = (url: string) => {
   if (url.includes('videos?')) {
     return {
@@ -8,7 +9,7 @@ const generateMockData = (url: string) => {
         id: "mock_vid_detail",
         snippet: {
           title: "Mock Video - API Quota Exceeded",
-          description: "This is a mock description because the YouTube API quota was exceeded or the API key is missing. Normal service will resume when the quota resets or a valid key is provided.",
+          description: "This is a mock description because all YouTube API quotas were exceeded. Normal service will resume when quotas reset.",
           channelTitle: "Mock Channel",
           channelId: "mock_channel_id",
           publishedAt: new Date().toISOString(),
@@ -34,7 +35,7 @@ const generateMockData = (url: string) => {
             snippet: {
               authorDisplayName: `Mock User ${i + 1}`,
               authorProfileImageUrl: `https://ui-avatars.com/api/?name=User+${i + 1}&background=random`,
-              textDisplay: "This is a mock comment because the API quota was exceeded.",
+              textDisplay: "This is a mock comment.",
               likeCount: Math.floor(Math.random() * 100),
               publishedAt: new Date(Date.now() - Math.random() * 10000000).toISOString(),
             }
@@ -44,13 +45,12 @@ const generateMockData = (url: string) => {
     };
   }
 
-  // search or related endpoint fallback
   return {
     items: Array(20).fill(0).map((_, i) => ({
       id: { videoId: `mock_vid_${Date.now()}_${i}` },
       snippet: {
         title: `Mock Video Title ${i + 1}`,
-        description: 'This is a mock video description. The YouTube API quota was exceeded, so dummy data is shown instead.',
+        description: 'All YouTube API quotas exceeded. Dummy data shown.',
         thumbnails: {
           medium: { url: `https://picsum.photos/seed/${Date.now()}_${i}/640/360` },
         },
@@ -64,31 +64,24 @@ const generateMockData = (url: string) => {
 };
 
 export const fetchFromAPI = async (url: string) => {
-  if (!API_KEY || url.includes('mock_vid_')) {
-    console.warn("YouTube API key is missing or mock ID detected. Returning mock data.");
+  if (url.includes('mock_vid_')) {
     return generateMockData(url);
   }
   
-  const separator = url.includes('?') ? '&' : '?';
-  const requestUrl = `${BASE_URL}/${url}${separator}key=${API_KEY}`;
-  
   try {
-    const response = await fetch(requestUrl);
+    const response = await fetch(`/api/youtube?endpoint=${encodeURIComponent(url)}`);
     
     if (!response.ok) {
-      if (response.status === 403) {
-        console.warn("YouTube API quota exceeded or API key is invalid. Returning mock data.");
+      if (response.status === 403 || response.status === 429) {
         return generateMockData(url);
       }
       const errorData = await response.json();
-      console.error("YouTube API Error:", errorData);
-      throw new Error(errorData.error?.message || 'Failed to fetch from YouTube API');
+      throw new Error(errorData.error || 'Failed to fetch from YouTube API');
     }
     
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
-    console.error("Error fetching from API, falling back to mock data:", error);
+    console.error("Error fetching from custom API proxy, falling back to mock data:", error);
     return generateMockData(url);
   }
 };
