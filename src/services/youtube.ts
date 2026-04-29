@@ -84,7 +84,17 @@ export const fetchFromAPI = async (url: string) => {
     return data;
   } catch (error: any) {
     if (error.message === "quotaExceeded") {
-      console.warn("YouTube API quota exceeded. Falling back to QuotaExceeded response.");
+      // Instead of returning an error, fallback to our internal yt-search proxy backend!
+      console.warn("YouTube API quota exceeded. Falling back to yt-search proxy...");
+      const [path, qs] = url.split('?');
+      try {
+         const fallbackRes = await fetch(`/api/youtube?path=${encodeURIComponent(path)}&qs=${encodeURIComponent(qs || '')}`);
+         if (fallbackRes.ok) {
+            return await fallbackRes.json();
+         }
+      } catch (e) {
+         console.error("Fallback error:", e);
+      }
       return { error: "quota_exceeded", message: "Try again tomorrow" };
     }
     throw error;
