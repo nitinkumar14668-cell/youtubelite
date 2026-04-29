@@ -51,7 +51,9 @@ class KeyManager {
   private currentIndex = 0;
   private failedKeys = new Set<string>();
 
-  getCurrentKey() {
+  private lastResetTime = 0;
+
+  getCurrentKey(): string | null {
     // Only search available keys
     for (let i = 0; i < API_KEYS.length; i++) {
       const idx = (this.currentIndex + i) % API_KEYS.length;
@@ -61,16 +63,20 @@ class KeyManager {
       }
     }
     
-    // If all fail, clear failed keys and restart to try again
-    console.warn("All YouTube API keys exhausted. Waiting/Resetting keys...");
-    this.failedKeys.clear();
-    return API_KEYS[0];
+    // If all fail, check if we should reset
+    const now = Date.now();
+    if (now - this.lastResetTime > 15 * 60 * 1000) { // 15 mins cooldown
+      this.failedKeys.clear();
+      this.lastResetTime = now;
+      return API_KEYS[0];
+    }
+
+    return null; // All keys are exhausted and in cooldown
   }
 
   markCurrentKeyAsFailed() {
     const currentKey = API_KEYS[this.currentIndex];
     this.failedKeys.add(currentKey);
-    console.warn(`Marked API key as failed: ${currentKey.substring(0, 8)}...`);
     this.currentIndex = (this.currentIndex + 1) % API_KEYS.length;
   }
 

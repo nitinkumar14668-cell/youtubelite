@@ -77,6 +77,10 @@ export const fetchFromAPI = async (url: string) => {
     
     while (attempts < maxAttempts) {
       const currentKey = keyManager.getCurrentKey();
+      if (!currentKey) {
+         throw new Error("All YouTube API keys exhausted.");
+      }
+
       const separator = url.includes('?') ? '&' : '?';
       const targetUrl = `${BASE_URL}/${url}${separator}key=${currentKey}`;
       
@@ -85,7 +89,6 @@ export const fetchFromAPI = async (url: string) => {
         
         if (!response.ok) {
           if (response.status === 403 || response.status === 429) {
-             console.warn(`Key ${currentKey.substring(0,8)}... hit quota or forbidden. Status: ${response.status}`);
              keyManager.markCurrentKeyAsFailed();
              attempts++;
              continue;
@@ -99,7 +102,8 @@ export const fetchFromAPI = async (url: string) => {
         if (error.message && error.message.includes('YouTube API Error')) {
            throw error;
         }
-        console.error("Network error inside fetcher:", error);
+        // only log actual network errors, not quota fails.
+        // since quota fails just `continue`, this catch is mostly for network errors
         attempts++;
       }
     }
@@ -116,7 +120,7 @@ export const fetchFromAPI = async (url: string) => {
     const data = await fetchWithCache(url, fetcher, ttlMs);
     return data;
   } catch (error) {
-    console.error("Error fetching from custom API proxy, falling back to mock data:", error);
+    console.warn("YouTube quotas exhausted or network unreachable. Falling back to mock data.");
     return generateMockData(url);
   }
 };
