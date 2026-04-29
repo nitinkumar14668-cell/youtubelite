@@ -29,16 +29,26 @@ export const fetchFromAPI = async (url: string) => {
             // Ignore parse errors
           }
 
-          const isQuotaError = response.status === 403 || response.status === 429 || errorData?.error?.errors?.[0]?.reason === 'quotaExceeded';
+          const reason = errorData?.error?.errors?.[0]?.reason || 'Unknown';
+          const message = errorData?.error?.message || `HTTP ${response.status}`;
+          
+          const isQuotaError = response.status === 429 || reason === 'quotaExceeded' || reason === 'rateLimitExceeded' || reason === 'dailyLimitExceeded';
 
-          if (isQuotaError) {
-             keyManager.markCurrentKeyAsFailed();
-             attempts++;
-             continue;
+          if (reason === 'accessNotConfigured' || reason === 'keyInvalid' || reason === 'youtubeSignupRequired') {
+            if (currentKey === process.env.NEXT_PUBLIC_YOUTUBE_API_KEY) {
+               throw new Error(`YouTube API Error [${reason}]: ${message}. Please ensure the YouTube Data API v3 is enabled for your key.`);
+            }
           }
 
-          const reason = errorData?.error?.errors?.[0]?.reason || response.statusText || 'Unknown';
-          const message = errorData?.error?.message || `HTTP ${response.status}`;
+          // For the user's keys (assuming they might be at index 0 or 1), if it's a configuration error, we should log it prominently.
+          if (response.status === 403 || response.status === 400 || isQuotaError) {
+            console.warn(`[YouTube API Error] Key ${currentKey.substring(0, 5)}... failed with ${reason}: ${message}`);
+            // To ensure we don't block on invalid keys but try other keys, we still treat these as 'failed keys' and skip
+            keyManager.markCurrentKeyAsFailed();
+            attempts++;
+            continue;
+          }
+
           throw new Error(`YouTube API Error [${reason}]: ${message}`);
         }
         

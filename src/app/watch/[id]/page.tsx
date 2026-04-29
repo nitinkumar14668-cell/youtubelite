@@ -167,10 +167,18 @@ export default function Watch() {
                 <span className="text-sm font-medium">Share</span>
               </button>
               
-              <button className="flex items-center gap-1.5 bg-[#272727] hover:bg-[#3f3f3f] px-3 py-1.5 rounded-full shrink-0 transition-colors">
+              <a 
+                href={`/api/download?id=${id}`}
+                download
+                className="flex items-center gap-1.5 bg-[#272727] hover:bg-[#3f3f3f] px-3 py-1.5 rounded-full shrink-0 transition-colors"
+                onClick={(e) => {
+                  // Prevent default if we are in iframe that might block it? No, standard href should be fine.
+                  // Just show a quick toast if we had a toast system, but we don't.
+                }}
+              >
                 <Download className="w-[18px] h-[18px]" />
                 <span className="text-sm font-medium">Download</span>
-              </button>
+              </a>
               
               <button className="bg-[#272727] hover:bg-[#3f3f3f] p-1.5 px-3 rounded-full shrink-0 transition-colors">
                 <MoreHorizontal className="w-[18px] h-[18px]" />
