@@ -5,6 +5,8 @@ import os from 'os';
 
 // List of provided API keys
 const API_KEYS = [
+  process.env.NEXT_PUBLIC_YOUTUBE_API_KEY,
+  process.env.YOUTUBE_API_KEY,
   "AIzaSyA9H9zDYNTL20NIJvPVUg9hruW0NGzg1bY",
   "AIzaSyAmTB47cBxEZEzafeKEc_VdrrqG-VZhXzw",
   "AIzaSyCJDcC4N0tV0HqXqNxpxhvnTnxS7YhYiZM",
@@ -45,7 +47,7 @@ const API_KEYS = [
   "AIzaSyCd7I5PH1_6tyu4bGGMXgCZM-pRJMYUQx4",
   "AIzaSyACRfUg4Azm82iAqszsLrcLU6EX0cZGyCc",
   "AIzaSyA2U7gjXpMylxvmZiAMwsaPj1Uu5Wut8EI"
-];
+].filter(Boolean) as string[];
 
 class KeyManager {
   private currentIndex = 0;
