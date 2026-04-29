@@ -67,7 +67,7 @@ export default function Channel() {
       {/* Channel Header Banner (Use a default if not present or just a generic gradient) */}
       <div 
         className="w-full h-32 sm:h-48 lg:h-64 bg-gradient-to-r from-purple-800 to-red-800 object-cover"
-        style={channelDetail?.brandingSettings?.image?.bannerExternalUrl ? { backgroundImage: `url(${channelDetail.brandingSettings.image.bannerExternalUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+        style={channelDetail?.brandingSettings?.image?.bannerExternalUrl ? { backgroundImage: `url(${channelDetail.brandingSettings.image.bannerExternalUrl}=w1920-fcrop64=1,00005a57ffffa5a8-k-c0xffffffff-no-nd-rj)`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
       />
       
       {/* Channel Info */}
@@ -81,14 +81,25 @@ export default function Channel() {
           <div className="flex-1 text-center sm:text-left">
             <h1 className="text-2xl sm:text-3xl font-bold mb-1">{channelDetail?.snippet?.title}</h1>
             <div className="text-[#aaaaaa] text-sm flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-3">
-              <span className="font-medium text-white">{channelDetail?.snippet?.customUrl}</span>
+              <span className="font-medium text-white">{channelDetail?.snippet?.customUrl || `@${channelDetail?.snippet?.title.replace(/\s+/g, '')}`}</span>
               <span className="hidden sm:inline">•</span>
               <span>
                 {Intl.NumberFormat('en-US', { notation: "compact", compactDisplay: "short" }).format(channelDetail?.statistics?.subscriberCount || 0)} subscribers
               </span>
               <span className="hidden sm:inline">•</span>
               <span>{channelDetail?.statistics?.videoCount} videos</span>
+              {channelDetail?.snippet?.country && (
+                <>
+                  <span className="hidden sm:inline">•</span>
+                  <span>{channelDetail?.snippet?.country}</span>
+                </>
+              )}
             </div>
+            {channelDetail?.brandingSettings?.channel?.keywords && (
+              <p className="text-xs text-gray-500 line-clamp-1 mb-2">
+                {channelDetail.brandingSettings.channel.keywords.replace(/"/g, '')}
+              </p>
+            )}
             <p className="text-sm text-[#aaaaaa] line-clamp-2 max-w-xl mb-4">
               {channelDetail?.snippet?.description}
             </p>
