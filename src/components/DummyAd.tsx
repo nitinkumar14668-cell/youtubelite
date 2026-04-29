@@ -27,7 +27,7 @@ export default function DummyAd({ layout = 'grid' }: { layout?: 'grid' | 'row' |
   const thumbnailContainerClass =
     layout === 'row' ? 'w-40 sm:w-48 shrink-0 rounded-xl' :
     layout === 'search' ? 'w-full sm:w-[360px] shrink-0 rounded-none sm:rounded-xl' :
-    'w-full rounded-none sm:rounded-xl';
+    'w-full rounded-none';
 
   const imageClass =
     layout === 'row' ? 'h-24 sm:h-28' :

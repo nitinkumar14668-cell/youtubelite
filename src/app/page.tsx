@@ -187,7 +187,7 @@ export default function Home() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0 sm:gap-x-4 sm:gap-y-10 w-full mb-2 sm:mb-0">
                 {[...Array(12)].map((_, i) => (
                   <div key={i} className="animate-pulse mb-4 sm:mb-0">
-                    <div className="bg-[#272727] aspect-video rounded-none sm:rounded-xl mb-3"></div>
+                    <div className="bg-[#272727] aspect-video rounded-none mb-3"></div>
                     <div className="flex gap-3 px-3 sm:px-0">
                       <div className="w-9 h-9 bg-[#272727] rounded-full shrink-0"></div>
                       <div className="flex-1 space-y-2">
@@ -245,12 +245,12 @@ export default function Home() {
                         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Youtube_shorts_icon.svg/512px-Youtube_shorts_icon.svg.png" alt="Shorts" className="w-6 h-6 object-contain" />
                         <h2 className="text-xl font-bold text-white">Shorts</h2>
                       </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-4 px-2 sm:px-0">
+                      <div className="flex overflow-x-auto custom-scrollbar gap-2 sm:gap-4 px-2 sm:px-0 pb-4 snap-x">
                         {chunk.map((video, i) => {
                            vIndex++;
                            const isLastInArray = vIndex === videos.length;
                            return (
-                             <div key={video.id?.videoId || video.id || `s-${vIndex}`} ref={isLastInArray ? lastVideoElementRef : undefined}>
+                             <div key={video.id?.videoId || video.id || `s-${vIndex}`} className="min-w-[140px] w-[140px] sm:min-w-[180px] sm:w-[180px] snap-start shrink-0" ref={isLastInArray ? lastVideoElementRef : undefined}>
                                <ShortCard video={video} />
                              </div>
                            );
@@ -263,12 +263,13 @@ export default function Home() {
                 while (vIndex < videos.length) {
                   if (cycle === 0) {
                     pushVideos(2, cycle);
+                    if (vIndex < videos.length) pushShorts(6, cycle);
                     if (vIndex < videos.length) pushAd(cycle);
                   } else if (cycle % 2 === 1) {
-                    pushShorts(6, cycle);
+                    pushVideos(4, cycle);
                     if (vIndex < videos.length) pushAd(cycle);
                   } else {
-                    pushVideos(4, cycle);
+                    pushShorts(6, cycle);
                     if (vIndex < videos.length) pushAd(cycle);
                   }
                   cycle++;
