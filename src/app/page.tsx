@@ -34,7 +34,11 @@ export default function Home() {
       if (data?.error === "quota_exceeded") {
         setQuotaExceeded(true);
       } else {
-        setVideos(prev => [...prev, ...(data.items || [])]);
+        setVideos(prev => {
+          const prevIds = new Set(prev.map(v => v.id?.videoId || v.id));
+          const newVideos = (data.items || []).filter((v: any) => !prevIds.has(v.id?.videoId || v.id));
+          return [...prev, ...newVideos];
+        });
         setNextPageToken(data.nextPageToken || null);
       }
     } catch (err: any) {
@@ -64,12 +68,29 @@ export default function Home() {
     setNextPageToken(null);
     setQuotaExceeded(false);
     try {
-      const query = selectedCategory === 'All' ? 'trending videos' : `${selectedCategory} videos`;
+      let query = selectedCategory === 'All' ? 'trending videos' : `${selectedCategory} videos`;
+      if (isRefresh && selectedCategory === 'All') {
+        const mix = ['viral shorts trending', 'most popular', 'latest gaming tech', 'top music videos', 'trending news worldwide'];
+        query = mix[Math.floor(Math.random() * mix.length)];
+      }
       const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video`);
       if (data?.error === "quota_exceeded") {
         setQuotaExceeded(true);
       } else {
-        setVideos(data.items || []);
+        if (isRefresh) {
+            setVideos(prev => {
+                const existingIds = new Set();
+                const combined = [...(data.items || []), ...prev].filter((v: any) => {
+                    const id = v.id?.videoId || v.id;
+                    if (existingIds.has(id)) return false;
+                    existingIds.add(id);
+                    return true;
+                });
+                return combined;
+            });
+        } else {
+            setVideos(data.items || []);
+        }
         setNextPageToken(data.nextPageToken || null);
       }
     } catch (err: any) {

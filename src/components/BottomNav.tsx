@@ -13,19 +13,19 @@ export default function BottomNav() {
         <Home className={`w-6 h-6 mb-1 ${pathname === '/' ? 'fill-white' : ''}`} />
         <span>Home</span>
       </Link>
-      <Link href="/" className="flex flex-col items-center p-2 min-w-[64px] hover:text-white">
-        <PlaySquare className="w-6 h-6 mb-1" />
+      <Link href="/shorts" className={`flex flex-col items-center p-2 min-w-[64px] ${pathname.startsWith('/shorts') ? 'text-white' : 'hover:text-white'}`}>
+        <PlaySquare className={`w-6 h-6 mb-1 ${pathname.startsWith('/shorts') ? 'fill-white' : ''}`} />
         <span>Shorts</span>
       </Link>
       <Link href="/broadcast" className={`flex flex-col items-center p-2 min-w-[64px] ${pathname === '/broadcast' ? 'text-white' : 'hover:text-white'}`}>
         <PlusCircle className="w-10 h-10 stroke-[1.5]" />
       </Link>
-      <Link href="/" className="flex flex-col items-center p-2 min-w-[64px] hover:text-white">
-        <LayoutList className="w-6 h-6 mb-1" />
+      <Link href="/subscriptions" className={`flex flex-col items-center p-2 min-w-[64px] ${pathname === '/subscriptions' ? 'text-white' : 'hover:text-white'}`}>
+        <LayoutList className={`w-6 h-6 mb-1 ${pathname === '/subscriptions' ? 'fill-white' : ''}`} />
         <span>Subscriptions</span>
       </Link>
-      <Link href="/" className="flex flex-col items-center p-2 min-w-[64px] hover:text-white">
-        <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center text-white mb-1 text-xs">
+      <Link href="/feed/you" className={`flex flex-col items-center p-2 min-w-[64px] ${pathname === '/feed/you' ? 'text-white' : 'hover:text-white'}`}>
+        <div className={`w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center text-white mb-1 text-xs ${pathname === '/feed/you' ? 'ring-2 ring-white' : ''}`}>
           U
         </div>
         <span>You</span>

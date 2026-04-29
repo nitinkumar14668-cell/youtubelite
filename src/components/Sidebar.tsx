@@ -5,11 +5,12 @@ import { Home, Compass, PlaySquare, Clock, ThumbsUp, Flame, Music, Gamepad2, Tro
 
 const categories = [
   { name: 'Home', icon: <Home className="w-5 h-5" />, path: '/' },
-  { name: 'Shorts', icon: <PlaySquare className="w-5 h-5" />, path: '/search/shorts' },
-  { name: 'Subscriptions', icon: <Compass className="w-5 h-5" />, path: '/' },
+  { name: 'Shorts', icon: <PlaySquare className="w-5 h-5" />, path: '/shorts' },
+  { name: 'Subscriptions', icon: <Compass className="w-5 h-5" />, path: '/subscriptions' },
   { divider: true },
-  { name: 'History', icon: <Clock className="w-5 h-5" />, path: '/' },
-  { name: 'Liked videos', icon: <ThumbsUp className="w-5 h-5" />, path: '/' },
+  { name: 'You', icon: <Clock className="w-5 h-5" />, path: '/feed/you' },
+  { name: 'History', icon: <Clock className="w-5 h-5" />, path: '/feed/you' },
+  { name: 'Liked videos', icon: <ThumbsUp className="w-5 h-5" />, path: '/feed/you' },
   { divider: true },
   { title: 'Explore' },
   { name: 'Trending', icon: <Flame className="w-5 h-5" />, path: '/search/trending' },
