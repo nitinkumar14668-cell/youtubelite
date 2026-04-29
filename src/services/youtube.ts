@@ -1,4 +1,7 @@
-const API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
+'use server';
+
+import { keyManager, fetchWithCache } from '../lib/apiManager';
+
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
 // Mock generation omitted for brevity, but I will keep it for safety.
@@ -68,18 +71,50 @@ export const fetchFromAPI = async (url: string) => {
     return generateMockData(url);
   }
   
-  try {
-    const response = await fetch(`/api/youtube?endpoint=${encodeURIComponent(url)}`);
+  const fetcher = async () => {
+    let attempts = 0;
+    const maxAttempts = keyManager.getTotalKeys();
     
-    if (!response.ok) {
-      if (response.status === 403 || response.status === 429) {
-        return generateMockData(url);
+    while (attempts < maxAttempts) {
+      const currentKey = keyManager.getCurrentKey();
+      const separator = url.includes('?') ? '&' : '?';
+      const targetUrl = `${BASE_URL}/${url}${separator}key=${currentKey}`;
+      
+      try {
+        const response = await fetch(targetUrl, { cache: 'no-store' });
+        
+        if (!response.ok) {
+          if (response.status === 403 || response.status === 429) {
+             console.warn(`Key ${currentKey.substring(0,8)}... hit quota or forbidden. Status: ${response.status}`);
+             keyManager.markCurrentKeyAsFailed();
+             attempts++;
+             continue;
+          }
+          const errorData = await response.json();
+          throw new Error(`YouTube API Error: ${errorData.error?.message || response.statusText}`);
+        }
+        
+        return await response.json();
+      } catch (error: any) {
+        if (error.message && error.message.includes('YouTube API Error')) {
+           throw error;
+        }
+        console.error("Network error inside fetcher:", error);
+        attempts++;
       }
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to fetch from YouTube API');
     }
     
-    return await response.json();
+    throw new Error("All API key attempts failed or network is unreachable.");
+  };
+
+  try {
+    let ttlMs = 15 * 60 * 1000;
+    if (url.startsWith('videos?')) {
+      ttlMs = 60 * 60 * 1000; 
+    }
+    
+    const data = await fetchWithCache(url, fetcher, ttlMs);
+    return data;
   } catch (error) {
     console.error("Error fetching from custom API proxy, falling back to mock data:", error);
     return generateMockData(url);
