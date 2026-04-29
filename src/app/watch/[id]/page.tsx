@@ -21,6 +21,7 @@ export default function Watch() {
   const [loading, setLoading] = useState(true);
   const [showOverlayAd, setShowOverlayAd] = useState(true);
   const [quotaExceeded, setQuotaExceeded] = useState(false);
+  const [showDownloadConfirm, setShowDownloadConfirm] = useState(false);
 
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(true);
 
@@ -170,18 +171,13 @@ export default function Watch() {
                 <span className="text-sm font-medium">Share</span>
               </button>
               
-              <a 
-                href={`/api/download?id=${id}`}
-                download
+              <button 
+                onClick={() => setShowDownloadConfirm(true)}
                 className="flex items-center gap-1.5 bg-[#272727] hover:bg-[#3f3f3f] px-3 py-1.5 rounded-full shrink-0 transition-colors"
-                onClick={(e) => {
-                  // Prevent default if we are in iframe that might block it? No, standard href should be fine.
-                  // Just show a quick toast if we had a toast system, but we don't.
-                }}
               >
                 <Download className="w-[18px] h-[18px]" />
                 <span className="text-sm font-medium">Download</span>
-              </a>
+              </button>
               
               <button className="bg-[#272727] hover:bg-[#3f3f3f] p-1.5 px-3 rounded-full shrink-0 transition-colors">
                 <MoreHorizontal className="w-[18px] h-[18px]" />
@@ -240,6 +236,33 @@ export default function Watch() {
           </div>
         </div>
       </div>
+
+      {showDownloadConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-sm bg-[#272727] rounded-xl p-6 shadow-xl border border-white/10">
+            <h3 className="text-xl font-bold text-white mb-2">Confirm Download</h3>
+            <p className="text-sm text-[#aaaaaa] mb-6">
+              Are you sure you want to download &quot;{snippet.title}&quot;? This will save the video to your device.
+            </p>
+            <div className="flex items-center justify-end gap-3">
+              <button 
+                onClick={() => setShowDownloadConfirm(false)}
+                className="px-4 py-2 rounded-full font-medium text-white hover:bg-[#3f3f3f] transition-colors"
+              >
+                Cancel
+              </button>
+              <a 
+                href={`/api/download?id=${id}`}
+                download
+                onClick={() => setShowDownloadConfirm(false)}
+                className="px-4 py-2 rounded-full font-medium bg-white text-black hover:bg-gray-200 transition-colors"
+              >
+                Download
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
