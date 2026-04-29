@@ -89,7 +89,20 @@ export default function Watch() {
     return <div className="flex-1 p-8 text-center bg-[#0f0f0f] text-white">Video not found.</div>;
   }
 
+  let publishTimeAgo = '';
+  if (videoDetail?.snippet?.publishedAt) {
+    try {
+      const dateObj = new Date(videoDetail.snippet.publishedAt);
+      if (!isNaN(dateObj.getTime())) {
+        publishTimeAgo = formatDistanceToNow(dateObj, { addSuffix: true });
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   const { snippet, statistics } = videoDetail;
+  const viewCountNum = Number(statistics.viewCount) || 0;
 
   return (
     <div className="flex-1 overflow-y-auto custom-scrollbar bg-[#0f0f0f] text-white">
@@ -117,7 +130,7 @@ export default function Watch() {
                 onClick={() => setIsDescriptionExpanded(true)}
               >
                 <span className="truncate mr-2 font-medium">{snippet.channelTitle}</span>
-                <span className="shrink-0 mr-1">{Intl.NumberFormat('en-US', { notation: "compact" }).format(statistics.viewCount || 0)} views</span>
+                <span className="shrink-0 mr-1">{Intl.NumberFormat('en-US', { notation: "compact" }).format(viewCountNum)} views</span>
                 <span className="shrink-0 font-bold text-white ml-1">...more</span>
               </div>
             ) : (
@@ -126,8 +139,8 @@ export default function Watch() {
                 className="mt-2 mb-4 bg-[#272727] hover:bg-[#3f3f3f] cursor-pointer rounded-xl p-3 text-sm transition-colors relative"
               >
                 <div className="font-semibold flex gap-2">
-                  <span>{Intl.NumberFormat('en-US').format(statistics.viewCount || 0)} views</span>
-                  <span>{formatDistanceToNow(new Date(snippet.publishedAt), { addSuffix: true })}</span>
+                  <span>{Intl.NumberFormat('en-US').format(viewCountNum)} views</span>
+                  <span>{publishTimeAgo}</span>
                 </div>
                 <p className="mt-2 text-[#e5e5e5] whitespace-pre-wrap">
                   {snippet.description}

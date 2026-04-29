@@ -30,12 +30,21 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
   const thumbnails = video.snippet?.thumbnails || {};
   const thumbnail = thumbnails.maxres?.url || thumbnails.high?.url || thumbnails.medium?.url || thumbnails.default?.url || 'https://via.placeholder.com/640x360.png?text=No+Thumbnail';
   
-  // Fake views for when API doesn't return statistics in search
   const views = video.statistics?.viewCount 
-    ? new Intl.NumberFormat('en-US', { notation: "compact", compactDisplay: "short" }).format(video.statistics.viewCount)
-    : Math.floor(Math.random() * 900 + 10) + 'K'; // Fallback if no stats
+    ? new Intl.NumberFormat('en-US', { notation: "compact", compactDisplay: "short" }).format(Number(video.statistics.viewCount))
+    : null; // Show nothing if no stats, or maybe fallback
 
-  const timeAgo = publishTime ? formatDistanceToNow(new Date(publishTime), { addSuffix: true }) : '';
+  let timeAgo = '';
+  if (publishTime) {
+    try {
+      const dateObj = new Date(publishTime);
+      if (!isNaN(dateObj.getTime())) {
+        timeAgo = formatDistanceToNow(dateObj, { addSuffix: true });
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
   const handleCardClick = () => {
     router.push(`/watch/${videoId}`);
@@ -101,12 +110,14 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
             </Link>
             <div className={`flex items-center ${layout === 'row' ? 'sm:before:content-["•"] sm:before:mx-1 shadow-sm' : layout === 'search' ? 'before:content-["•"] before:mx-1' : ''}`}>
               {video.snippet?.liveBroadcastContent === 'live' ? (
-                <span>{views} watching</span>
+                <>
+                  {views && <span>{views} watching</span>}
+                </>
               ) : (
                 <>
-                  <span>{views} views</span>
-                  <span className="mx-1">•</span>
-                  <span>{timeAgo}</span>
+                  {views && <span>{views} views</span>}
+                  {views && timeAgo && <span className="mx-1">•</span>}
+                  {timeAgo && <span>{timeAgo}</span>}
                 </>
               )}
             </div>
