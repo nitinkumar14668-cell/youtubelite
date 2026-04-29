@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   // It handles rotation natively.
   const fetcher = async () => {
     let attempts = 0;
-    const maxAttempts = 5; // try up to 5 keys if failures occur rapidly
+    const maxAttempts = keyManager.getTotalKeys(); // try up to all keys if failures occur
 
     while (attempts < maxAttempts) {
       const currentKey = keyManager.getCurrentKey();

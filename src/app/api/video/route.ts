@@ -5,7 +5,7 @@ const BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
 async function performFetch(endpoint: string) {
   let attempts = 0;
-  const maxAttempts = 5;
+  const maxAttempts = keyManager.getTotalKeys();
 
   while (attempts < maxAttempts) {
     const currentKey = keyManager.getCurrentKey();

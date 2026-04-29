@@ -73,6 +73,10 @@ class KeyManager {
     console.warn(`Marked API key as failed: ${currentKey.substring(0, 8)}...`);
     this.currentIndex = (this.currentIndex + 1) % API_KEYS.length;
   }
+
+  getTotalKeys() {
+    return API_KEYS.length;
+  }
 }
 
 export const keyManager = new KeyManager();
