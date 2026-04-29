@@ -13,6 +13,7 @@ const categories = [
 
 export default function Home() {
   const [videos, setVideos] = useState<any[]>([]);
+  const [liveVideos, setLiveVideos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -73,10 +74,30 @@ export default function Home() {
         const mix = ['viral shorts trending', 'most popular', 'latest gaming tech', 'top music videos', 'trending news worldwide'];
         query = mix[Math.floor(Math.random() * mix.length)];
       }
-      const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video`);
-      if (data?.error === "quota_exceeded") {
+
+      let data: any = null;
+      let liveDataResult: any = null;
+
+      if (selectedCategory === 'All' && !isRefresh) {
+        const [liveRes, searchRes] = await Promise.all([
+          fetchFromAPI('search?part=snippet&maxResults=8&eventType=live&type=video&q=live'),
+          fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video`)
+        ]);
+        liveDataResult = liveRes;
+        data = searchRes;
+      } else {
+        data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video`);
+      }
+
+      if (data?.error === "quota_exceeded" || liveDataResult?.error === "quota_exceeded") {
         setQuotaExceeded(true);
       } else {
+        if (liveDataResult && liveDataResult.items) {
+           setLiveVideos(liveDataResult.items);
+        } else if (selectedCategory !== 'All' && !isRefresh) {
+           setLiveVideos([]);
+        }
+
         if (isRefresh) {
             setVideos(prev => {
                 const existingIds = new Set();
@@ -208,7 +229,7 @@ export default function Home() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0 sm:gap-x-4 sm:gap-y-10 w-full mb-2 sm:mb-0">
                 {[...Array(12)].map((_, i) => (
                   <div key={i} className="animate-pulse mb-4 sm:mb-0">
-                    <div className="bg-[#272727] aspect-video rounded-none mb-3"></div>
+                    <div className="bg-[#272727] aspect-video rounded-none sm:rounded-xl mb-3"></div>
                     <div className="flex gap-3 px-3 sm:px-0">
                       <div className="w-9 h-9 bg-[#272727] rounded-full shrink-0"></div>
                       <div className="flex-1 space-y-2">
@@ -261,7 +282,7 @@ export default function Home() {
                   const chunk = videos.slice(vIndex, vIndex + countToPush);
                   
                   elements.push(
-                    <div key={`schunk-${cycleIdx}`} className="mb-4 sm:mb-8 clear-both w-full">
+                    <div key={`schunk-${cycleIdx}`} className="mb-4 sm:mb-8 clear-both w-full border-b border-[#272727] pb-8 pt-4 sm:border-none sm:pb-0 sm:pt-0">
                       <div className="flex items-center gap-2 px-3 sm:px-0 mb-4 mt-2 sm:mt-0">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Youtube_shorts_icon.svg/512px-Youtube_shorts_icon.svg.png" alt="Shorts" className="w-6 h-6 object-contain" />
                         <h2 className="text-xl font-bold text-white">Shorts</h2>
@@ -281,9 +302,31 @@ export default function Home() {
                   );
                 };
 
+                const pushLive = () => {
+                  if (liveVideos.length === 0) return;
+                  elements.push(
+                    <div key={`live-section`} className="mb-4 sm:mb-8 clear-both w-full border-b border-[#272727] pb-8 sm:border-none sm:pb-0">
+                      <div className="flex items-center justify-between px-3 sm:px-0 mb-4 mt-2 sm:mt-0">
+                        <div className="flex items-center gap-2">
+                           <div className="bg-red-600 rounded-full w-2 h-2 animate-pulse" />
+                           <h2 className="text-xl font-bold text-white">Live</h2>
+                        </div>
+                      </div>
+                      <div className="flex overflow-x-auto custom-scrollbar gap-2 sm:gap-4 px-2 sm:px-0 pb-4 snap-x">
+                        {liveVideos.map((video, i) => (
+                           <div key={video.id?.videoId || video.id || `live-${i}`} className="min-w-[280px] w-[280px] sm:min-w-[320px] sm:w-[320px] snap-start shrink-0">
+                             <VideoCard video={video} layout="carousel" />
+                           </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                };
+
                 while (vIndex < videos.length) {
                   if (cycle === 0) {
-                    pushVideos(2, cycle);
+                    pushVideos(4, cycle);
+                    pushLive();
                     if (vIndex < videos.length) pushShorts(6, cycle);
                     if (vIndex < videos.length) pushAd(cycle);
                   } else if (cycle % 2 === 1) {

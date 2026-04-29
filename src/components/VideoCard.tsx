@@ -10,12 +10,13 @@ import { MoreVertical } from 'lucide-react';
 
 interface VideoCardProps {
   video: any;
-  layout?: 'grid' | 'row' | 'search';
+  layout?: 'grid' | 'row' | 'search' | 'carousel';
 }
 
 export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
   const isRow = layout === 'row';
   const isSearch = layout === 'search';
+  const isCarousel = layout === 'carousel';
   const isGridClass = layout === 'grid';
   const router = useRouter();
   // Sometimes API returns search endpoint results where id is an object
@@ -48,7 +49,8 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
   const thumbnailContainerClass =
     layout === 'row' ? 'w-40 sm:w-48 shrink-0 rounded-xl' :
     layout === 'search' ? 'w-full sm:w-[360px] shrink-0 rounded-none sm:rounded-xl' :
-    'w-full rounded-none';
+    layout === 'carousel' ? 'w-full rounded-xl' :
+    'w-full rounded-none sm:rounded-xl';
 
   const imageClass =
     layout === 'row' ? 'h-24 sm:h-28' :
@@ -61,16 +63,22 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
       whileTap={{ scale: 0.98 }}
       className={`group flex ${containerClass} w-full transition-transform cursor-pointer relative ${layout === 'grid' ? 'mb-4 sm:mb-0' : ''}`}
     >
-      <div className={`relative overflow-hidden transition-all duration-300 group-hover:rounded-none ${thumbnailContainerClass}`}>
+      <div className={`relative overflow-hidden transition-all duration-300 ${layout !== 'carousel' ? 'group-hover:rounded-none' : ''} ${thumbnailContainerClass}`}>
         <img 
           src={thumbnail} 
           alt={title}
           className={`w-full bg-[#222] object-cover transition-transform duration-300 group-hover:scale-105 ${imageClass}`}
         />
-        {/* Timestamp placeholder */}
-        <div className="absolute bottom-1 right-1 bg-black/80 px-1.5 py-0.5 rounded text-xs font-medium transition-opacity duration-300 group-hover:opacity-0">
-          {Math.floor(Math.random() * 20 + 2)}:{Math.floor(Math.random() * 50 + 10)}
-        </div>
+        {/* Timestamp placeholder or LIVE badge */}
+        {video.snippet?.liveBroadcastContent === 'live' ? (
+          <div className="absolute bottom-1 right-1 bg-red-600 px-1.5 py-0.5 rounded text-xs font-bold flex items-center gap-1">
+            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> LIVE
+          </div>
+        ) : (
+          <div className="absolute bottom-1 right-1 bg-black/80 px-1.5 py-0.5 rounded text-xs font-medium transition-opacity duration-300 group-hover:opacity-0">
+            {Math.floor(Math.random() * 20 + 2)}:{Math.floor(Math.random() * 50 + 10)}
+          </div>
+        )}
       </div>
       
       <div className={`flex gap-3 ${layout === 'search' ? 'px-3 py-3 sm:px-0 sm:py-0' : layout === 'grid' ? 'px-3 sm:px-0' : isRow ? 'flex-1 py-1' : ''}`}>
@@ -95,9 +103,15 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
               {channelTitle}
             </Link>
             <div className={`flex items-center ${layout === 'row' ? 'sm:before:content-["•"] sm:before:mx-1 shadow-sm' : layout === 'search' ? 'before:content-["•"] before:mx-1' : ''}`}>
-              <span>{views} views</span>
-              <span className="mx-1">•</span>
-              <span>{timeAgo}</span>
+              {video.snippet?.liveBroadcastContent === 'live' ? (
+                <span>{views} watching</span>
+              ) : (
+                <>
+                  <span>{views} views</span>
+                  <span className="mx-1">•</span>
+                  <span>{timeAgo}</span>
+                </>
+              )}
             </div>
           </div>
           {(layout === 'row' || layout === 'search') && video.snippet?.description && (
