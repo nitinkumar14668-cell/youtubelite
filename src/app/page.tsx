@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { fetchFromAPI } from '../services/youtube';
 import VideoCard from '../components/VideoCard';
 import DummyAd from '../components/DummyAd';
+import QuotaExceededComponent from '../components/QuotaExceeded';
 import { Compass } from 'lucide-react';
 
 const categories = [
@@ -17,25 +18,30 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [startY, setStartY] = useState(0);
   const [pullRatio, setPullRatio] = useState(0);
   const observer = useRef<IntersectionObserver | null>(null);
 
   const fetchMoreVideos = useCallback(async () => {
-    if (!nextPageToken || loadingMore) return;
+    if (!nextPageToken || loadingMore || quotaExceeded) return;
     setLoadingMore(true);
     try {
       const query = selectedCategory === 'All' ? 'trending videos' : `${selectedCategory} videos`;
       const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video${nextPageToken ? `&pageToken=${nextPageToken}` : ''}`);
-      setVideos(prev => [...prev, ...(data.items || [])]);
-      setNextPageToken(data.nextPageToken || null);
+      if (data?.error === "quota_exceeded") {
+        setQuotaExceeded(true);
+      } else {
+        setVideos(prev => [...prev, ...(data.items || [])]);
+        setNextPageToken(data.nextPageToken || null);
+      }
     } catch (err: any) {
       console.error(err);
     } finally {
       setLoadingMore(false);
     }
-  }, [nextPageToken, loadingMore, selectedCategory]);
+  }, [nextPageToken, loadingMore, selectedCategory, quotaExceeded]);
 
   const lastVideoElementRef = useCallback((node: HTMLDivElement) => {
     if (loading || loadingMore) return;
@@ -55,11 +61,16 @@ export default function Home() {
     else setRefreshing(true);
     setError(null);
     setNextPageToken(null);
+    setQuotaExceeded(false);
     try {
       const query = selectedCategory === 'All' ? 'trending videos' : `${selectedCategory} videos`;
       const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video`);
-      setVideos(data.items || []);
-      setNextPageToken(data.nextPageToken || null);
+      if (data?.error === "quota_exceeded") {
+        setQuotaExceeded(true);
+      } else {
+        setVideos(data.items || []);
+        setNextPageToken(data.nextPageToken || null);
+      }
     } catch (err: any) {
       if (err?.message?.toLowerCase().includes('quota')) {
         setError('YouTube API Quota Exceeded. Please try again later or verify your billing/quota in Google Cloud Console.');
@@ -143,7 +154,9 @@ export default function Home() {
       </div>
 
       <div className="py-6">
-        {error && (
+        {quotaExceeded ? (
+          <QuotaExceededComponent onRetry={() => fetchVideos()} />
+        ) : error ? (
           <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
             <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-6 sm:p-8 rounded-2xl max-w-lg w-full flex flex-col items-center gap-4">
               <Compass className="w-12 h-12 shrink-0 text-red-500/80" />
@@ -162,51 +175,53 @@ export default function Home() {
               </div>
             </div>
           </div>
-        )}
+        ) : null}
         
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-x-4 sm:gap-y-10">
-            {[...Array(12)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="bg-[#272727] aspect-video rounded-xl mb-3"></div>
-                <div className="flex gap-3">
-                  <div className="w-9 h-9 bg-[#272727] rounded-full shrink-0"></div>
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-[#272727] rounded w-[90%]"></div>
-                    <div className="h-4 bg-[#272727] rounded w-[60%]"></div>
+        {!quotaExceeded && !error && (
+          loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-x-4 sm:gap-y-10">
+              {[...Array(12)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-[#272727] aspect-video rounded-xl mb-3"></div>
+                  <div className="flex gap-3">
+                    <div className="w-9 h-9 bg-[#272727] rounded-full shrink-0"></div>
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-[#272727] rounded w-[90%]"></div>
+                      <div className="h-4 bg-[#272727] rounded w-[60%]"></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-x-4 sm:gap-y-10">
-            {videos.map((video, idx) => {
-              const isLast = videos.length === idx + 1;
-              const ad = idx > 0 && idx % 6 === 3 ? <DummyAd layout="grid" /> : null;
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-x-4 sm:gap-y-10">
+              {videos.map((video, idx) => {
+                const isLast = videos.length === idx + 1;
+                const ad = idx > 0 && idx % 6 === 3 ? <DummyAd layout="grid" /> : null;
 
-              if (isLast) {
-                return (
-                  <React.Fragment key={idx}>
-                    {ad}
-                    <div ref={lastVideoElementRef}>
+                if (isLast) {
+                  return (
+                    <React.Fragment key={idx}>
+                      {ad}
+                      <div ref={lastVideoElementRef}>
+                        <VideoCard video={video} />
+                      </div>
+                    </React.Fragment>
+                  );
+                } else {
+                  return (
+                    <React.Fragment key={idx}>
+                      {ad}
                       <VideoCard video={video} />
-                    </div>
-                  </React.Fragment>
-                );
-              } else {
-                return (
-                  <React.Fragment key={idx}>
-                    {ad}
-                    <VideoCard video={video} />
-                  </React.Fragment>
-                );
-              }
-            })}
-          </div>
+                    </React.Fragment>
+                  );
+                }
+              })}
+            </div>
+          )
         )}
         
-        {loadingMore && (
+        {loadingMore && !quotaExceeded && !error && (
           <div className="w-full flex justify-center py-6 mt-4">
             <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
           </div>

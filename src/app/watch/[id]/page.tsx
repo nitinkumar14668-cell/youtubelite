@@ -8,6 +8,7 @@ import { fetchFromAPI } from '../../../services/youtube';
 import VideoCard from '../../../components/VideoCard';
 import DummyAd from '../../../components/DummyAd';
 import VideoOverlayAd from '../../../components/VideoOverlayAd';
+import QuotaExceededComponent from '../../../components/QuotaExceeded';
 import { ThumbsUp, ThumbsDown, Share2, Download, MoreHorizontal, MessageSquare } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -19,38 +20,44 @@ export default function Watch() {
   const [comments, setComments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showOverlayAd, setShowOverlayAd] = useState(true);
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
 
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const videoRes = await fetchFromAPI(`videos?part=snippet,statistics&id=${encodeURIComponent(id)}`);
-        
-        let videoData: any = null;
-        if (videoRes.items && videoRes.items.length > 0) {
-          videoData = videoRes.items[0];
-          setVideoDetail(videoData);
-        }
-
-        // Fetch related videos (using title search as relatedToVideoId is deprecated) and comments in parallel
-        const titleQuery = videoData ? encodeURIComponent(videoData.snippet.title) : 'recommended';
-        
-        const [relatedRes, commentRes] = await Promise.all([
-          fetchFromAPI(`search?part=snippet&q=${titleQuery}&type=video&maxResults=15`).catch(() => ({ items: [] })),
-          fetchFromAPI(`commentThreads?part=snippet&videoId=${encodeURIComponent(id)}&maxResults=20`).catch(() => ({ items: [] }))
-        ]);
-
-        setRelatedVideos(relatedRes.items || []);
-        setComments(commentRes.items || []);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+  const fetchData = async () => {
+    setLoading(true);
+    setQuotaExceeded(false);
+    try {
+      const videoRes = await fetchFromAPI(`videos?part=snippet,statistics&id=${encodeURIComponent(id)}`);
+      if (videoRes?.error === "quota_exceeded") {
+        setQuotaExceeded(true);
+        return;
       }
-    };
+      
+      let videoData: any = null;
+      if (videoRes.items && videoRes.items.length > 0) {
+        videoData = videoRes.items[0];
+        setVideoDetail(videoData);
+      }
 
+      // Fetch related videos (using title search as relatedToVideoId is deprecated) and comments in parallel
+      const titleQuery = videoData ? encodeURIComponent(videoData.snippet.title) : 'recommended';
+      
+      const [relatedRes, commentRes] = await Promise.all([
+        fetchFromAPI(`search?part=snippet&q=${titleQuery}&type=video&maxResults=15`).catch(() => ({ items: [] })),
+        fetchFromAPI(`commentThreads?part=snippet&videoId=${encodeURIComponent(id)}&maxResults=20`).catch(() => ({ items: [] }))
+      ]);
+
+      setRelatedVideos(relatedRes.items || []);
+      setComments(commentRes.items || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (id) {
       fetchData();
     }
@@ -60,6 +67,14 @@ export default function Watch() {
     return (
       <div className="flex-1 flex justify-center items-center bg-[#0f0f0f]">
         <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (quotaExceeded) {
+    return (
+      <div className="flex-1 bg-[#0f0f0f]">
+        <QuotaExceededComponent onRetry={() => fetchData()} />
       </div>
     );
   }

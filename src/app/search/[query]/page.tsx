@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import { fetchFromAPI } from '../../../services/youtube';
 import VideoCard from '../../../components/VideoCard';
 import DummyAd from '../../../components/DummyAd';
+import QuotaExceededComponent from '../../../components/QuotaExceeded';
 import { SlidersHorizontal, Loader2 } from 'lucide-react';
 import { motion, useAnimation } from 'motion/react';
 
@@ -16,6 +17,7 @@ export default function Search() {
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('All');
   const [refreshing, setRefreshing] = useState(false);
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
   
   // Pull to refresh state
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -25,12 +27,17 @@ export default function Search() {
   const fetchResults = useCallback(async (isRefresh = false) => {
     if (!isRefresh) setLoading(true);
     else setRefreshing(true);
+    setQuotaExceeded(false);
     
     try {
       const type = activeFilter === 'Shorts' ? 'video' : 'video'; // API limitation, fake it
       const searchQuery = activeFilter === 'Shorts' ? `${query} #shorts` : query;
       const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(searchQuery)}&type=${type}`);
-      setVideos(data.items || []);
+      if (data?.error === "quota_exceeded") {
+        setQuotaExceeded(true);
+      } else {
+        setVideos(data.items || []);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -121,6 +128,8 @@ export default function Search() {
           <div className="w-full flex justify-center py-10">
             <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
           </div>
+        ) : quotaExceeded ? (
+          <QuotaExceededComponent onRetry={() => fetchResults()} />
         ) : (
           <div className="flex flex-col sm:gap-4 pb-20">
             {videos.map((video, idx) => (

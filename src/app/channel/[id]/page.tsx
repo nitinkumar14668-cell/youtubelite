@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { fetchFromAPI } from '../../../services/youtube';
 import VideoCard from '../../../components/VideoCard';
+import QuotaExceededComponent from '../../../components/QuotaExceeded';
 
 export default function Channel() {
   const params = useParams();
@@ -10,23 +11,29 @@ export default function Channel() {
   const [channelDetail, setChannelDetail] = useState<any>(null);
   const [videos, setVideos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
+
+  const fetchResults = async () => {
+    setLoading(true);
+    setQuotaExceeded(false);
+    try {
+      const channelData = await fetchFromAPI(`channels?part=snippet,statistics&id=${encodeURIComponent(id)}`);
+      if (channelData?.error === "quota_exceeded") {
+        setQuotaExceeded(true);
+        return;
+      }
+      setChannelDetail(channelData?.items?.[0]);
+
+      const videosData = await fetchFromAPI(`search?channelId=${encodeURIComponent(id)}&part=snippet&order=date&maxResults=20`);
+      setVideos(videosData?.items || []);
+    } catch (error) {
+      console.error("Error fetching channel details:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchResults = async () => {
-      setLoading(true);
-      try {
-        const channelData = await fetchFromAPI(`channels?part=snippet,statistics&id=${encodeURIComponent(id)}`);
-        setChannelDetail(channelData?.items?.[0]);
-
-        const videosData = await fetchFromAPI(`search?channelId=${encodeURIComponent(id)}&part=snippet&order=date&maxResults=20`);
-        setVideos(videosData?.items || []);
-      } catch (error) {
-        console.error("Error fetching channel details:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (id) {
       fetchResults();
     }
@@ -36,6 +43,14 @@ export default function Channel() {
     return (
       <div className="flex-1 flex justify-center items-center bg-[#0f0f0f]">
         <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (quotaExceeded) {
+    return (
+      <div className="flex-1 bg-[#0f0f0f]">
+        <QuotaExceededComponent onRetry={() => fetchResults()} />
       </div>
     );
   }
