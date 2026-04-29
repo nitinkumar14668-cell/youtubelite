@@ -17,7 +17,7 @@ export default function Channel() {
     setLoading(true);
     setQuotaExceeded(false);
     try {
-      const channelData = await fetchFromAPI(`channels?part=snippet,statistics&id=${encodeURIComponent(id)}`);
+      const channelData = await fetchFromAPI(`channels?part=snippet,statistics,brandingSettings&id=${encodeURIComponent(id)}`);
       if (channelData?.error === "quota_exceeded") {
         setQuotaExceeded(true);
         return;
