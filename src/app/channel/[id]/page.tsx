@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { fetchFromAPI } from '../../../services/youtube';
+import { fetchFromAPI, resetApiKeys } from '../../../services/youtube';
 import VideoCard from '../../../components/VideoCard';
 import QuotaExceededComponent from '../../../components/QuotaExceeded';
 
@@ -50,7 +50,10 @@ export default function Channel() {
   if (quotaExceeded) {
     return (
       <div className="flex-1 bg-[#0f0f0f]">
-        <QuotaExceededComponent onRetry={() => fetchResults()} />
+        <QuotaExceededComponent onRetry={async () => {
+           await resetApiKeys();
+           fetchResults();
+        }} />
       </div>
     );
   }

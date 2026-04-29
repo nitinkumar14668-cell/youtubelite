@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import ReactPlayer from 'react-player';
 const Player: any = ReactPlayer;
-import { fetchFromAPI } from '../../../services/youtube';
+import { fetchFromAPI, resetApiKeys } from '../../../services/youtube';
 import VideoCard from '../../../components/VideoCard';
 import DummyAd from '../../../components/DummyAd';
 import VideoOverlayAd from '../../../components/VideoOverlayAd';
@@ -74,7 +74,10 @@ export default function Watch() {
   if (quotaExceeded) {
     return (
       <div className="flex-1 bg-[#0f0f0f]">
-        <QuotaExceededComponent onRetry={() => fetchData()} />
+        <QuotaExceededComponent onRetry={async () => {
+           await resetApiKeys();
+           fetchData();
+        }} />
       </div>
     );
   }

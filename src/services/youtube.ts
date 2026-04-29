@@ -4,6 +4,10 @@ import { keyManager, fetchWithCache } from '../lib/apiManager';
 
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
+export const resetApiKeys = async () => {
+  keyManager.reset();
+};
+
 export const fetchFromAPI = async (url: string) => {
   const fetcher = async () => {
     let attempts = 0;
@@ -42,7 +46,11 @@ export const fetchFromAPI = async (url: string) => {
 
           // For the user's keys (assuming they might be at index 0 or 1), if it's a configuration error, we should log it prominently.
           if (response.status === 403 || response.status === 400 || isQuotaError) {
-            console.warn(`[YouTube API Error] Key ${currentKey.substring(0, 5)}... failed with ${reason}: ${message}`);
+            if (!isQuotaError) {
+               if (currentKey === process.env.NEXT_PUBLIC_YOUTUBE_API_KEY || currentKey === process.env.YOUTUBE_API_KEY) {
+                  console.warn(`[YouTube API Error] Key ${currentKey.substring(0, 5)}... failed with ${reason}: ${message}`);
+               }
+            }
             // To ensure we don't block on invalid keys but try other keys, we still treat these as 'failed keys' and skip
             keyManager.markCurrentKeyAsFailed();
             attempts++;

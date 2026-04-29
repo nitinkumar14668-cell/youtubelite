@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { fetchFromAPI } from '../services/youtube';
+import { fetchFromAPI, resetApiKeys } from '../services/youtube';
 import VideoCard from '../components/VideoCard';
 import DummyAd from '../components/DummyAd';
 import QuotaExceededComponent from '../components/QuotaExceeded';
@@ -155,7 +155,10 @@ export default function Home() {
 
       <div className="py-6">
         {quotaExceeded ? (
-          <QuotaExceededComponent onRetry={() => fetchVideos()} />
+          <QuotaExceededComponent onRetry={async () => {
+             await resetApiKeys();
+             fetchVideos();
+          }} />
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
             <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-6 sm:p-8 rounded-2xl max-w-lg w-full flex flex-col items-center gap-4">

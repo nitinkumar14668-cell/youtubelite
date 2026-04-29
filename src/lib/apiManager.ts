@@ -85,6 +85,12 @@ class KeyManager {
   getTotalKeys() {
     return API_KEYS.length;
   }
+
+  reset() {
+    this.currentIndex = 0;
+    this.failedKeys.clear();
+    this.lastResetTime = Date.now();
+  }
 }
 
 export const keyManager = new KeyManager();

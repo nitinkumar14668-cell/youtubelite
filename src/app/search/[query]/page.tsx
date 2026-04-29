@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import { fetchFromAPI } from '../../../services/youtube';
+import { fetchFromAPI, resetApiKeys } from '../../../services/youtube';
 import VideoCard from '../../../components/VideoCard';
 import DummyAd from '../../../components/DummyAd';
 import QuotaExceededComponent from '../../../components/QuotaExceeded';
@@ -129,7 +129,10 @@ export default function Search() {
             <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : quotaExceeded ? (
-          <QuotaExceededComponent onRetry={() => fetchResults()} />
+          <QuotaExceededComponent onRetry={async () => {
+             await resetApiKeys();
+             fetchResults();
+          }} />
         ) : (
           <div className="flex flex-col sm:gap-4 pb-20">
             {videos.map((video, idx) => (
