@@ -62,7 +62,7 @@ export default function Home() {
       if (entries[0].isIntersecting && nextPageToken) {
         fetchMoreVideos();
       }
-    });
+    }, { rootMargin: '400px' });
     
     if (node) observer.current.observe(node);
   }, [loading, loadingMore, nextPageToken, fetchMoreVideos]);
@@ -273,9 +273,8 @@ export default function Home() {
                     <div key={`vchunk-${cycleIdx}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0 sm:gap-x-4 sm:gap-y-10 w-full mb-2 sm:mb-0">
                       {chunk.map((video, i) => {
                         vIndex++;
-                        const isLastInArray = vIndex === videos.length;
                         return (
-                          <div key={video.id?.videoId || video.id || `v-${vIndex}`} ref={isLastInArray ? lastVideoElementRef : undefined}>
+                          <div key={video.id?.videoId || video.id || `v-${vIndex}`}>
                             <VideoCard video={video} layout="grid" />
                           </div>
                         );
@@ -298,9 +297,8 @@ export default function Home() {
                       <div className="flex overflow-x-auto custom-scrollbar gap-2 sm:gap-4 px-2 sm:px-0 pb-4 snap-x">
                         {chunk.map((video, i) => {
                            vIndex++;
-                           const isLastInArray = vIndex === videos.length;
                            return (
-                             <div key={video.id?.videoId || video.id || `s-${vIndex}`} className="min-w-[140px] w-[140px] sm:min-w-[180px] sm:w-[180px] snap-start shrink-0" ref={isLastInArray ? lastVideoElementRef : undefined}>
+                             <div key={video.id?.videoId || video.id || `s-${vIndex}`} className="min-w-[140px] w-[140px] sm:min-w-[180px] sm:w-[180px] snap-start shrink-0">
                                <ShortCard video={video} />
                              </div>
                            );
@@ -345,6 +343,12 @@ export default function Home() {
                     if (vIndex < videos.length) pushAd(cycle);
                   }
                   cycle++;
+                }
+
+                if (nextPageToken && !error && !quotaExceeded) {
+                  elements.push(
+                    <div key="infinite-scroll-trigger" ref={lastVideoElementRef} className="h-4 w-full" />
+                  );
                 }
 
                 return elements;
