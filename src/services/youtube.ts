@@ -5,14 +5,30 @@ import { keyManager, fetchWithCache } from '../lib/apiManager';
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
 // Mock generation omitted for brevity, but I will keep it for safety.
-const generateMockData = (url: string) => {
+const generateMockData = (url: string, error?: any) => {
+  let errorMessage = "All YouTube API quotas were exceeded. Normal service will resume when quotas reset.";
+  let errorTitle = "Mock Video - API Quota Exceeded";
+
+  if (error instanceof Error) {
+    if (error.message.includes('invalidArgument') || error.message.includes('badRequest')) {
+      errorMessage = "The requested search or parameters are invalid. Please check your query.";
+      errorTitle = "Mock Video - Invalid Request";
+    } else if (error.message.includes('All API key attempts failed') || error.message.includes('network unreachable')) {
+      errorMessage = "YouTube API keys are exhausted or the network is unreachable. Falling back to mock data.";
+      errorTitle = "Mock Video - Service Unavailable";
+    } else if (error.message.includes('YouTube API Error')) {
+      errorMessage = `YouTube API Error: ${error.message}`;
+      errorTitle = "Mock Video - API Error";
+    }
+  }
+
   if (url.includes('videos?')) {
     return {
       items: [{
         id: "mock_vid_detail",
         snippet: {
-          title: "Mock Video - API Quota Exceeded",
-          description: "This is a mock description because all YouTube API quotas were exceeded. Normal service will resume when quotas reset.",
+          title: errorTitle,
+          description: errorMessage,
           channelTitle: "Mock Channel",
           channelId: "mock_channel_id",
           publishedAt: new Date().toISOString(),
@@ -38,7 +54,7 @@ const generateMockData = (url: string) => {
             snippet: {
               authorDisplayName: `Mock User ${i + 1}`,
               authorProfileImageUrl: `https://ui-avatars.com/api/?name=User+${i + 1}&background=random`,
-              textDisplay: "This is a mock comment.",
+              textDisplay: `This is a mock comment. ${errorMessage}`,
               likeCount: Math.floor(Math.random() * 100),
               publishedAt: new Date(Date.now() - Math.random() * 10000000).toISOString(),
             }
@@ -52,8 +68,8 @@ const generateMockData = (url: string) => {
     items: Array(20).fill(0).map((_, i) => ({
       id: { videoId: `mock_vid_${Date.now()}_${i}` },
       snippet: {
-        title: `Mock Video Title ${i + 1}`,
-        description: 'All YouTube API quotas exceeded. Dummy data shown.',
+        title: `${errorTitle} ${i + 1}`,
+        description: errorMessage,
         thumbnails: {
           medium: { url: `https://picsum.photos/seed/${Date.now()}_${i}/640/360` },
         },
@@ -88,13 +104,24 @@ export const fetchFromAPI = async (url: string) => {
         const response = await fetch(targetUrl, { cache: 'no-store' });
         
         if (!response.ok) {
-          if (response.status === 403 || response.status === 429) {
+          let errorData: any = {};
+          try {
+            errorData = await response.json();
+          } catch (e) {
+            // Ignore parse errors
+          }
+
+          const isQuotaError = response.status === 403 || response.status === 429 || errorData?.error?.errors?.[0]?.reason === 'quotaExceeded';
+
+          if (isQuotaError) {
              keyManager.markCurrentKeyAsFailed();
              attempts++;
              continue;
           }
-          const errorData = await response.json();
-          throw new Error(`YouTube API Error: ${errorData.error?.message || response.statusText}`);
+
+          const reason = errorData?.error?.errors?.[0]?.reason || response.statusText || 'Unknown';
+          const message = errorData?.error?.message || `HTTP ${response.status}`;
+          throw new Error(`YouTube API Error [${reason}]: ${message}`);
         }
         
         return await response.json();
@@ -119,8 +146,8 @@ export const fetchFromAPI = async (url: string) => {
     
     const data = await fetchWithCache(url, fetcher, ttlMs);
     return data;
-  } catch (error) {
-    console.warn("YouTube quotas exhausted or network unreachable. Falling back to mock data.");
-    return generateMockData(url);
+  } catch (error: any) {
+    console.warn(`YouTube API fallback triggered. Reason: ${error.message || 'Unknown error'}`);
+    return generateMockData(url, error);
   }
 };
