@@ -1,6 +1,7 @@
 'use server';
 
 import { keyManager, fetchWithCache } from '../lib/apiManager';
+import ytSearch from 'yt-search';
 
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
@@ -84,14 +85,85 @@ export const fetchFromAPI = async (url: string) => {
     return data;
   } catch (error: any) {
     if (error.message === "quotaExceeded") {
-      // Instead of returning an error, fallback to our internal yt-search proxy backend!
-      console.warn("YouTube API quota exceeded. Falling back to yt-search proxy...");
+      console.warn("YouTube API quota exceeded. Falling back to internal yt-search...");
+      
       const [path, qs] = url.split('?');
+      const params = new URLSearchParams(qs || '');
+      
       try {
-         const fallbackRes = await fetch(`/api/youtube?path=${encodeURIComponent(path)}&qs=${encodeURIComponent(qs || '')}`);
-         if (fallbackRes.ok) {
-            return await fallbackRes.json();
-         }
+        
+        if (path === 'search') {
+          const q = params.get('q') || 'trending';
+          const channelId = params.get('channelId');
+          
+          let r;
+          if (channelId) {
+             r = await ytSearch(channelId + ' videos');
+          } else {
+             r = await ytSearch(q);
+          }
+          
+          return {
+            items: (r.videos || []).slice(0, 20).map(v => ({
+              id: { videoId: v.videoId || '' },
+              snippet: {
+                title: v.title || 'Unknown Video',
+                description: v.description || '',
+                thumbnails: {
+                  medium: { url: v.thumbnail || v.image || '' },
+                  high: { url: v.image || v.thumbnail || '' },
+                },
+                channelTitle: v.author?.name || 'Unknown',
+                channelId: v.author?.url?.split('/').pop() || 'channel',
+                publishedAt: v.uploadDate ? new Date(v.uploadDate).toISOString() : new Date().toISOString(),
+              }
+            }))
+          };
+        } else if (path === 'videos') {
+          const id = params.get('id');
+          if (!id) return { items: [] };
+          try {
+            const v = await ytSearch({ videoId: id });
+            if (!v) return { items: [] };
+            
+            return {
+              items: [{
+                id: v.videoId,
+                snippet: {
+                  title: v.title,
+                  description: v.description,
+                  thumbnails: { medium: { url: v.thumbnail || v.image }, high: { url: v.thumbnail || v.image } },
+                  channelTitle: v.author?.name || 'Unknown',
+                  publishedAt: v.uploadDate ? new Date(v.uploadDate).toISOString() : new Date().toISOString(),
+                },
+                statistics: {
+                  viewCount: v.views ? v.views.toString() : '0',
+                  likeCount: '0'
+                }
+              }]
+            };
+          } catch (err) {
+             console.error("ytSearch video fetching error", err);
+             return { items: [] };
+          }
+        } else if (path === 'channels') {
+           return {
+             items: [{
+               id: params.get('id'),
+               snippet: {
+                 title: 'YouTube Channel',
+                 description: 'Information limited in fallback mode.',
+                 thumbnails: { default: { url: '' }, high: { url: '' } }
+               },
+               statistics: { subscriberCount: '0', videoCount: '0' },
+               brandingSettings: { image: { bannerExternalUrl: '' } }
+             }]
+           };
+        } else if (path === 'commentThreads') {
+           return { items: [] };
+        }
+        
+        return { items: [] };
       } catch (e) {
          console.error("Fallback error:", e);
       }
