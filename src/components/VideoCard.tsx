@@ -48,7 +48,7 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
   const thumbnailContainerClass =
     layout === 'row' ? 'w-40 sm:w-48 shrink-0 rounded-xl' :
     layout === 'search' ? 'w-full sm:w-[360px] shrink-0 rounded-none sm:rounded-xl' :
-    'w-full rounded-xl';
+    'w-full rounded-none sm:rounded-xl';
 
   const imageClass =
     layout === 'row' ? 'h-24 sm:h-28' :
@@ -59,7 +59,7 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
     <motion.div 
       onClick={handleCardClick}
       whileTap={{ scale: 0.98 }}
-      className={`group flex ${containerClass} w-full transition-transform cursor-pointer relative`}
+      className={`group flex ${containerClass} w-full transition-transform cursor-pointer relative ${layout === 'grid' ? 'mb-4 sm:mb-0' : ''}`}
     >
       <div className={`relative overflow-hidden transition-all duration-300 group-hover:rounded-none ${thumbnailContainerClass}`}>
         <img 
@@ -73,7 +73,7 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
         </div>
       </div>
       
-      <div className={`flex gap-3 ${layout === 'search' ? 'px-3 py-3 sm:px-0 sm:py-0' : isRow ? 'flex-1 py-1' : ''}`}>
+      <div className={`flex gap-3 ${layout === 'search' ? 'px-3 py-3 sm:px-0 sm:py-0' : layout === 'grid' ? 'px-3 sm:px-0' : isRow ? 'flex-1 py-1' : ''}`}>
         {/* Only hide avatar on mobile if layout is grid/row? Wait, mobile search DOES show avatar. So instead of !isRow, we show it everywhere except desktop 'row' maybe? Or hide on 'row', show on 'grid' and 'search'. */}
         {layout !== 'row' && (
           <div className="shrink-0 pt-0.5">

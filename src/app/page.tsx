@@ -4,6 +4,7 @@ import { fetchFromAPI, resetApiKeys } from '../services/youtube';
 import VideoCard from '../components/VideoCard';
 import DummyAd from '../components/DummyAd';
 import QuotaExceededComponent from '../components/QuotaExceeded';
+import ShortCard from '../components/ShortCard';
 import { Compass } from 'lucide-react';
 
 const categories = [
@@ -121,7 +122,7 @@ export default function Home() {
 
   return (
     <div 
-      className="flex-1 overflow-y-auto px-4 sm:px-6 custom-scrollbar bg-[#0f0f0f] relative"
+      className="flex-1 overflow-y-auto px-0 sm:px-6 custom-scrollbar bg-[#0f0f0f] relative"
       ref={scrollRef}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -137,7 +138,7 @@ export default function Home() {
         </div>
       </div>
       {/* Category Pills */}
-      <div className="sticky top-0 z-40 bg-[#0f0f0f]/95 backdrop-blur py-3 flex gap-3 overflow-x-auto custom-scrollbar border-b border-transparent">
+      <div className="sticky top-0 z-40 bg-[#0f0f0f]/95 backdrop-blur py-3 flex gap-3 overflow-x-auto custom-scrollbar border-b border-transparent px-3 sm:px-0">
         {categories.map((cat) => (
           <button
             key={cat}
@@ -182,44 +183,99 @@ export default function Home() {
         
         {!quotaExceeded && !error && (
           loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-x-4 sm:gap-y-10">
-              {[...Array(12)].map((_, i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="bg-[#272727] aspect-video rounded-xl mb-3"></div>
-                  <div className="flex gap-3">
-                    <div className="w-9 h-9 bg-[#272727] rounded-full shrink-0"></div>
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-[#272727] rounded w-[90%]"></div>
-                      <div className="h-4 bg-[#272727] rounded w-[60%]"></div>
+            <div className="flex flex-col gap-0 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0 sm:gap-x-4 sm:gap-y-10 w-full mb-2 sm:mb-0">
+                {[...Array(12)].map((_, i) => (
+                  <div key={i} className="animate-pulse mb-4 sm:mb-0">
+                    <div className="bg-[#272727] aspect-video rounded-none sm:rounded-xl mb-3"></div>
+                    <div className="flex gap-3 px-3 sm:px-0">
+                      <div className="w-9 h-9 bg-[#272727] rounded-full shrink-0"></div>
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 bg-[#272727] rounded w-[90%]"></div>
+                        <div className="h-4 bg-[#272727] rounded w-[60%]"></div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-x-4 sm:gap-y-10">
-              {videos.map((video, idx) => {
-                const isLast = videos.length === idx + 1;
-                const ad = idx > 0 && idx % 6 === 3 ? <DummyAd layout="grid" /> : null;
+            <div className="flex flex-col gap-0 sm:gap-6">
+              {(() => {
+                const elements: React.ReactNode[] = [];
+                let vIndex = 0;
+                let cycle = 0;
 
-                if (isLast) {
-                  return (
-                    <React.Fragment key={idx}>
-                      {ad}
-                      <div ref={lastVideoElementRef}>
-                        <VideoCard video={video} />
+                const pushAd = (idx: number) => {
+                  elements.push(
+                    <div key={`ad-${idx}`} className="w-full px-0 sm:px-0 mb-2 sm:mb-6">
+                      <DummyAd layout="grid" />
+                    </div>
+                  );
+                };
+
+                const pushVideos = (count: number, cycleIdx: number) => {
+                  const countToPush = Math.min(count, videos.length - vIndex);
+                  if (countToPush <= 0) return;
+                  const chunk = videos.slice(vIndex, vIndex + countToPush);
+                  
+                  elements.push(
+                    <div key={`vchunk-${cycleIdx}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0 sm:gap-x-4 sm:gap-y-10 w-full mb-2 sm:mb-0">
+                      {chunk.map((video, i) => {
+                        vIndex++;
+                        const isLastInArray = vIndex === videos.length;
+                        return (
+                          <div key={video.id?.videoId || video.id || `v-${vIndex}`} ref={isLastInArray ? lastVideoElementRef : undefined}>
+                            <VideoCard video={video} layout="grid" />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                };
+
+                const pushShorts = (count: number, cycleIdx: number) => {
+                  const countToPush = Math.min(count, videos.length - vIndex);
+                  if (countToPush <= 0) return;
+                  const chunk = videos.slice(vIndex, vIndex + countToPush);
+                  
+                  elements.push(
+                    <div key={`schunk-${cycleIdx}`} className="mb-4 sm:mb-8 clear-both w-full">
+                      <div className="flex items-center gap-2 px-3 sm:px-0 mb-4 mt-2 sm:mt-0">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Youtube_shorts_icon.svg/512px-Youtube_shorts_icon.svg.png" alt="Shorts" className="w-6 h-6 object-contain" />
+                        <h2 className="text-xl font-bold text-white">Shorts</h2>
                       </div>
-                    </React.Fragment>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-4 px-2 sm:px-0">
+                        {chunk.map((video, i) => {
+                           vIndex++;
+                           const isLastInArray = vIndex === videos.length;
+                           return (
+                             <div key={video.id?.videoId || video.id || `s-${vIndex}`} ref={isLastInArray ? lastVideoElementRef : undefined}>
+                               <ShortCard video={video} />
+                             </div>
+                           );
+                        })}
+                      </div>
+                    </div>
                   );
-                } else {
-                  return (
-                    <React.Fragment key={idx}>
-                      {ad}
-                      <VideoCard video={video} />
-                    </React.Fragment>
-                  );
+                };
+
+                while (vIndex < videos.length) {
+                  if (cycle === 0) {
+                    pushVideos(2, cycle);
+                    if (vIndex < videos.length) pushAd(cycle);
+                  } else if (cycle % 2 === 1) {
+                    pushShorts(6, cycle);
+                    if (vIndex < videos.length) pushAd(cycle);
+                  } else {
+                    pushVideos(4, cycle);
+                    if (vIndex < videos.length) pushAd(cycle);
+                  }
+                  cycle++;
                 }
-              })}
+
+                return elements;
+              })()}
             </div>
           )
         )}

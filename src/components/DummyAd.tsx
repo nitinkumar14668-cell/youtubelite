@@ -27,7 +27,7 @@ export default function DummyAd({ layout = 'grid' }: { layout?: 'grid' | 'row' |
   const thumbnailContainerClass =
     layout === 'row' ? 'w-40 sm:w-48 shrink-0 rounded-xl' :
     layout === 'search' ? 'w-full sm:w-[360px] shrink-0 rounded-none sm:rounded-xl' :
-    'w-full rounded-xl';
+    'w-full rounded-none sm:rounded-xl';
 
   const imageClass =
     layout === 'row' ? 'h-24 sm:h-28' :
@@ -62,7 +62,7 @@ export default function DummyAd({ layout = 'grid' }: { layout?: 'grid' | 'row' |
         </div>
       </div>
       
-      <div className={`flex gap-3 ${layout === 'search' ? 'px-3 py-3 sm:px-0 sm:py-0' : layout === 'row' ? 'flex-1 py-1' : ''}`}>
+      <div className={`flex gap-3 ${layout === 'search' ? 'px-3 py-3 sm:px-0 sm:py-0' : layout === 'grid' ? 'px-3 sm:px-0' : layout === 'row' ? 'flex-1 py-1' : ''}`}>
         {layout !== 'row' && (
           <div className="shrink-0 pt-0.5">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white font-bold text-xs ring-1 ring-white/10">
