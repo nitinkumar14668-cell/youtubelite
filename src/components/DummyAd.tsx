@@ -29,10 +29,7 @@ export default function DummyAd({ layout = 'grid' }: { layout?: 'grid' | 'row' |
     layout === 'search' ? 'w-full sm:w-[360px] shrink-0 rounded-none sm:rounded-xl' :
     'w-full rounded-none sm:rounded-xl';
 
-  const imageClass =
-    layout === 'row' ? 'h-24 sm:h-28' :
-    layout === 'search' ? 'aspect-video sm:h-[200px]' :
-    'aspect-video';
+  const imageClass = 'aspect-video w-full h-auto';
 
   return (
     <div className={`flex w-full ${containerClass} cursor-pointer group relative`}>

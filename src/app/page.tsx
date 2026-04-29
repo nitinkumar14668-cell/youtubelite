@@ -325,8 +325,8 @@ export default function Home() {
 
                 while (vIndex < videos.length) {
                   if (cycle === 0) {
-                    pushVideos(4, cycle);
                     pushLive();
+                    pushVideos(4, cycle);
                     if (vIndex < videos.length) pushShorts(6, cycle);
                     if (vIndex < videos.length) pushAd(cycle);
                   } else if (cycle % 2 === 1) {

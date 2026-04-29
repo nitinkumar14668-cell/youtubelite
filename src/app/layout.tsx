@@ -1,6 +1,7 @@
 import "./globals.css";
 import React from 'react';
 import ClientLayout from '../components/ClientLayout';
+import LocationProvider from '../components/LocationProvider';
 
 export const metadata = {
   title: 'YouTube Lite',
@@ -15,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-[#0f0f0f] text-white">
+        <LocationProvider />
         <ClientLayout>{children}</ClientLayout>
       </body>
     </html>

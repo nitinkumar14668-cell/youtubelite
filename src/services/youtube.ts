@@ -10,6 +10,10 @@ export const resetApiKeys = async () => {
 };
 
 export const fetchFromAPI = async (url: string) => {
+  const { cookies } = await import('next/headers');
+  const cookieStore = await cookies();
+  const regionCode = cookieStore.get('region_code')?.value || 'IN';
+
   const fetcher = async () => {
     let attempts = 0;
     const maxAttempts = keyManager.getTotalKeys();
@@ -20,8 +24,14 @@ export const fetchFromAPI = async (url: string) => {
          throw new Error("quotaExceeded");
       }
 
-      const separator = url.includes('?') ? '&' : '?';
-      const targetUrl = `${BASE_URL}/${url}${separator}key=${currentKey}`;
+      // Automatically append location region if it's a search
+      let targetUrlPath = url;
+      if (targetUrlPath.startsWith('search?')) {
+        targetUrlPath += `&regionCode=${regionCode}`;
+      }
+
+      const separator = targetUrlPath.includes('?') ? '&' : '?';
+      const targetUrl = `${BASE_URL}/${targetUrlPath}${separator}key=${currentKey}`;
       
       try {
         const response = await fetch(targetUrl, { cache: 'no-store' });

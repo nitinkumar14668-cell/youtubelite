@@ -75,7 +75,8 @@ export default function BroadcastPage() {
         
         // Randomly simulate viewers joining/leaving
         setViewers(prev => {
-          const change = Math.floor(Math.random() * 5) - 1; // -1 to +3
+          if (prev === 0) return Math.floor(Math.random() * 10) + 5; // Start with 5-14 viewers
+          const change = Math.floor(Math.random() * 11) - 4; // -4 to +6
           return Math.max(1, prev + change);
         });
         

@@ -52,10 +52,7 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
     layout === 'carousel' ? 'w-full rounded-xl' :
     'w-full rounded-none sm:rounded-xl';
 
-  const imageClass =
-    layout === 'row' ? 'h-24 sm:h-28' :
-    layout === 'search' ? 'aspect-video sm:h-[200px]' :
-    'aspect-video';
+  const imageClass = 'aspect-video w-full h-auto';
 
   return (
     <motion.div 
