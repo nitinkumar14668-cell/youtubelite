@@ -5,6 +5,7 @@ import Link from 'next/link';
 import ReactPlayer from 'react-player';
 const Player: any = ReactPlayer;
 import { fetchFromAPI, resetApiKeys } from '../../../services/youtube';
+import { enrichVideos } from '../../../lib/youtubeUtils';
 import VideoCard from '../../../components/VideoCard';
 import DummyAd from '../../../components/DummyAd';
 import VideoOverlayAd from '../../../components/VideoOverlayAd';
@@ -49,7 +50,8 @@ export default function Watch() {
         fetchFromAPI(`commentThreads?part=snippet&videoId=${encodeURIComponent(id)}&maxResults=20`).catch(() => ({ items: [] }))
       ]);
 
-      setRelatedVideos(relatedRes.items || []);
+      const enrichedRelated = await enrichVideos(relatedRes.items || [], fetchFromAPI);
+      setRelatedVideos(enrichedRelated);
       setComments(commentRes.items || []);
     } catch (err) {
       console.error(err);

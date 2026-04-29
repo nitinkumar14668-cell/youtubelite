@@ -7,6 +7,8 @@ import QuotaExceededComponent from '../components/QuotaExceeded';
 import ShortCard from '../components/ShortCard';
 import { Compass } from 'lucide-react';
 
+import { enrichVideos } from '../lib/youtubeUtils';
+
 const categories = [
   "All", "Music", "Mixes", "Gaming", "Live", "Programming", "Podcast", "News", "Esports", "Recently uploaded"
 ];
@@ -35,9 +37,11 @@ export default function Home() {
       if (data?.error === "quota_exceeded") {
         setQuotaExceeded(true);
       } else {
+        const enrichedNewVideos = await enrichVideos(data.items || [], fetchFromAPI);
+        
         setVideos(prev => {
           const prevIds = new Set(prev.map(v => v.id?.videoId || v.id));
-          const newVideos = (data.items || []).filter((v: any) => !prevIds.has(v.id?.videoId || v.id));
+          const newVideos = enrichedNewVideos.filter((v: any) => !prevIds.has(v.id?.videoId || v.id));
           return [...prev, ...newVideos];
         });
         setNextPageToken(data.nextPageToken || null);
@@ -93,15 +97,18 @@ export default function Home() {
         setQuotaExceeded(true);
       } else {
         if (liveDataResult && liveDataResult.items) {
-           setLiveVideos(liveDataResult.items);
+           const enrichedLive = await enrichVideos(liveDataResult.items, fetchFromAPI);
+           setLiveVideos(enrichedLive);
         } else if (selectedCategory !== 'All' && !isRefresh) {
            setLiveVideos([]);
         }
 
+        const enrichedItems = await enrichVideos(data.items || [], fetchFromAPI);
+
         if (isRefresh) {
             setVideos(prev => {
                 const existingIds = new Set();
-                const combined = [...(data.items || []), ...prev].filter((v: any) => {
+                const combined = [...enrichedItems, ...prev].filter((v: any) => {
                     const id = v.id?.videoId || v.id;
                     if (existingIds.has(id)) return false;
                     existingIds.add(id);
@@ -110,7 +117,7 @@ export default function Home() {
                 return combined;
             });
         } else {
-            setVideos(data.items || []);
+            setVideos(enrichedItems);
         }
         setNextPageToken(data.nextPageToken || null);
       }

@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { fetchFromAPI, resetApiKeys } from '../../../services/youtube';
+import { enrichVideos } from '../../../lib/youtubeUtils';
 import VideoCard from '../../../components/VideoCard';
 import DummyAd from '../../../components/DummyAd';
 import QuotaExceededComponent from '../../../components/QuotaExceeded';
@@ -36,7 +37,8 @@ export default function Search() {
       if (data?.error === "quota_exceeded") {
         setQuotaExceeded(true);
       } else {
-        setVideos(data.items || []);
+        const enrichedItems = await enrichVideos(data.items || [], fetchFromAPI);
+        setVideos(enrichedItems);
       }
     } catch (err) {
       console.error(err);

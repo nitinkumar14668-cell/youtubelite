@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { fetchFromAPI, resetApiKeys } from '../../../services/youtube';
+import { enrichVideos } from '../../../lib/youtubeUtils';
 import VideoCard from '../../../components/VideoCard';
 import QuotaExceededComponent from '../../../components/QuotaExceeded';
 
@@ -25,7 +26,8 @@ export default function Channel() {
       setChannelDetail(channelData?.items?.[0]);
 
       const videosData = await fetchFromAPI(`search?channelId=${encodeURIComponent(id)}&part=snippet&order=date&maxResults=20`);
-      setVideos(videosData?.items || []);
+      const enrichedVideos = await enrichVideos(videosData?.items || [], fetchFromAPI);
+      setVideos(enrichedVideos);
     } catch (error) {
       console.error("Error fetching channel details:", error);
     } finally {
