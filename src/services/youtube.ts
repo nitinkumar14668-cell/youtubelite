@@ -125,7 +125,13 @@ export const fetchFromAPI = async (url: string) => {
                 },
                 channelTitle: v.author?.name || 'Unknown',
                 channelId: v.author?.url?.split('/').pop() || 'channel',
-                publishedAt: v.uploadDate ? new Date(v.uploadDate).toISOString() : new Date().toISOString(),
+                publishedAt: (() => {
+                  if (v.uploadDate) {
+                    const d = new Date(v.uploadDate);
+                    if (!isNaN(d.getTime())) return d.toISOString();
+                  }
+                  return new Date().toISOString();
+                })(),
               }
             }))
           };
@@ -144,7 +150,13 @@ export const fetchFromAPI = async (url: string) => {
                   description: v.description,
                   thumbnails: { medium: { url: v.thumbnail || v.image }, high: { url: v.thumbnail || v.image } },
                   channelTitle: v.author?.name || 'Unknown',
-                  publishedAt: v.uploadDate ? new Date(v.uploadDate).toISOString() : new Date().toISOString(),
+                  publishedAt: (() => {
+                    if (v.uploadDate) {
+                      const d = new Date(v.uploadDate);
+                      if (!isNaN(d.getTime())) return d.toISOString();
+                    }
+                    return new Date().toISOString();
+                  })(),
                 },
                 statistics: {
                   viewCount: v.views ? v.views.toString() : '0',
