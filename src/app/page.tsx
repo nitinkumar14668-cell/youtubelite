@@ -33,7 +33,7 @@ export default function Home() {
     setLoadingMore(true);
     try {
       const query = selectedCategory === 'All' ? 'trending videos' : `${selectedCategory} videos`;
-      const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video${nextPageToken ? `&pageToken=${nextPageToken}` : ''}`);
+      const data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video&regionCode=IN${nextPageToken ? `&pageToken=${nextPageToken}` : ''}`);
       if (data?.error === "quota_exceeded") {
         setQuotaExceeded(true);
       } else {
@@ -84,13 +84,13 @@ export default function Home() {
 
       if (selectedCategory === 'All' && !isRefresh) {
         const [liveRes, searchRes] = await Promise.all([
-          fetchFromAPI('search?part=snippet&maxResults=8&eventType=live&type=video&q=live'),
-          fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video`)
+          fetchFromAPI('search?part=snippet&maxResults=8&eventType=live&type=video&q=live&regionCode=IN'),
+          fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video&regionCode=IN`)
         ]);
         liveDataResult = liveRes;
         data = searchRes;
       } else {
-        data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video`);
+        data = await fetchFromAPI(`search?part=snippet&maxResults=20&q=${encodeURIComponent(query)}&type=video&regionCode=IN`);
       }
 
       if (data?.error === "quota_exceeded" || liveDataResult?.error === "quota_exceeded") {

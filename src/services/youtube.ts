@@ -108,9 +108,9 @@ export const fetchFromAPI = async (url: string) => {
           
           let r;
           if (channelId) {
-             r = await ytSearch(channelId + ' videos');
+             r = await ytSearch({ query: channelId + ' videos', gl: 'IN' });
           } else {
-             r = await ytSearch(q);
+             r = await ytSearch({ query: q, gl: 'IN' });
           }
           
           return {
