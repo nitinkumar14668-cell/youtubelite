@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { fetchFromAPI, resetApiKeys } from '../../../services/youtube';
 import VideoCard from '../../../components/VideoCard';
@@ -13,7 +13,7 @@ export default function Channel() {
   const [loading, setLoading] = useState(true);
   const [quotaExceeded, setQuotaExceeded] = useState(false);
 
-  const fetchResults = async () => {
+  const fetchResults = useCallback(async () => {
     setLoading(true);
     setQuotaExceeded(false);
     try {
@@ -31,13 +31,13 @@ export default function Channel() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     if (id) {
       fetchResults();
     }
-  }, [id]);
+  }, [id, fetchResults]);
 
   if (loading) {
     return (

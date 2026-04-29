@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import ReactPlayer from 'react-player';
@@ -25,7 +25,7 @@ export default function Watch() {
 
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(true);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setQuotaExceeded(false);
     try {
@@ -56,13 +56,13 @@ export default function Watch() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     if (id) {
       fetchData();
     }
-  }, [id]);
+  }, [id, fetchData]);
 
   if (loading) {
     return (
