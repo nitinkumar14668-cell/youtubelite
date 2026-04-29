@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from 'react';
-import { GoogleGenAI } from "@google/genai";
 import { Sparkles, Video, PlaySquare, Copy, CheckCircle2, ChevronRight, BarChart, Tag } from 'lucide-react';
+import { generateSeoAction } from './actions';
 
 export default function SEOPage() {
   const [topic, setTopic] = useState('');
@@ -22,42 +22,15 @@ export default function SEOPage() {
     setResult(null);
 
     try {
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-      if (!apiKey) {
-        throw new Error("Missing NEXT_PUBLIC_GEMINI_API_KEY environment variable. Please add your Gemini API Key in the settings.");
+      const response = await generateSeoAction(topic, contentType);
+      
+      if (!response.success) {
+        throw new Error(response.error);
       }
-
-      const ai = new GoogleGenAI({ apiKey });
-      const prompt = `You are a master YouTube SEO algorithm expert. The user wants to make a highly viral ${contentType} about: "${topic}".
-Generate a fully automatic, highly optimized SEO package designed to score 95-100 on SEO tools (like VidIQ or TubeBuddy).
-
-Return ONLY a raw JSON object (no markdown, no \`\`\`json) with this exact schema:
-{
-  "titles": ["Catchy Viral Title 1", "Search-Optimized Title 2", "Clickable Title 3"],
-  "description": "Full YouTube description. Include a strong 2-sentence hook, detailed body with keywords, timestamps (if it's a Video), and 3-5 relevant hashtags at the bottom.",
-  "tags": ["long tail keyword 1", "broad keyword 2", "specific keyword 3", ... (generate 15-20 highly searched tags)],
-  "seoScore": 99,
-  "scoreJustification": "Brief explanation of why this metadata achieves a near-perfect SEO score based on keyword density, CTR potential, etc."
-}`;
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          temperature: 0.7,
-        }
-      });
-
-      let text = response.text || '';
-      // Clean up potential markdown formatting if the model disobeys
-      if (text.startsWith('```json')) text = text.replace(/```json/g, '');
-      if (text.startsWith('```')) text = text.replace(/```/g, '');
-      text = text.trim();
-
-      const jsonResult = JSON.parse(text);
-      setResult(jsonResult);
+      
+      setResult(response.data);
     } catch (err: any) {
-      console.error("Gemini API Error:", err);
+      console.error("SEO Generation Error:", err);
       setError(err.message || "Failed to generate SEO. Please try again.");
     } finally {
       setLoading(false);
