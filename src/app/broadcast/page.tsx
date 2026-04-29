@@ -1,11 +1,12 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
-import { Camera, Mic, MicOff, Video, VideoOff, Settings, Circle, MessageSquare, Share2, X, Send, User } from 'lucide-react';
+import { Camera, Mic, MicOff, Video, VideoOff, Settings, Circle, MessageSquare, Share2, X, Send, User, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function BroadcastPage() {
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [uploadedVideoUrl, setUploadedVideoUrl] = useState<string | null>(null);
   const [isLive, setIsLive] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
@@ -16,8 +17,25 @@ export default function BroadcastPage() {
   const [error, setError] = useState('');
   
   const videoRef = useRef<HTMLVideoElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+        setStream(null);
+      }
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+      const url = URL.createObjectURL(file);
+      setUploadedVideoUrl(url);
+      setError('');
+    }
+  };
 
   // Initialize media devices
   useEffect(() => {
@@ -129,7 +147,7 @@ export default function BroadcastPage() {
     <div className="flex flex-col lg:flex-row h-screen bg-[#0f0f0f] text-white overflow-hidden">
       {/* Main Studio Area */}
       <div className="flex-1 flex flex-col relative h-[50vh] lg:h-full border-r border-[#272727]">
-        {!stream && !error && (
+        {!stream && !uploadedVideoUrl && !error && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 z-20">
             <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
             <p>Accessing Camera...</p>
@@ -149,10 +167,17 @@ export default function BroadcastPage() {
 
         <video 
           ref={videoRef}
+          src={uploadedVideoUrl || undefined}
           autoPlay 
           playsInline 
-          muted 
+          muted={!uploadedVideoUrl || isMuted} 
+          loop={!!uploadedVideoUrl}
           className={`w-full h-full object-cover bg-black ${isVideoOff ? 'opacity-0' : 'opacity-100'}`} 
+          onLoadedData={() => {
+            if (uploadedVideoUrl && videoRef.current) {
+              videoRef.current.play();
+            }
+          }}
         />
         
         {isVideoOff && (
@@ -200,11 +225,28 @@ export default function BroadcastPage() {
               </button>
             </div>
             
-            <div className="flex gap-3">
+            <div className="flex gap-3 items-center">
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                accept="video/*" 
+                className="hidden" 
+                onChange={handleFileUpload}
+              />
+              {!isLive && (
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex px-4 py-3 bg-[#272727] hover:bg-[#3f3f3f] rounded-full font-bold uppercase tracking-wider items-center gap-2 shadow-lg transition-all"
+                  title="Upload pre-recorded video"
+                >
+                  <Upload className="w-5 h-5 text-white" />
+                  <span className="hidden sm:inline text-white text-xs">Simulate</span>
+                </button>
+              )}
               {!isLive ? (
                 <button 
                   onClick={() => setIsLive(true)}
-                  disabled={!stream || !!error}
+                  disabled={(!stream && !uploadedVideoUrl) || !!error}
                   className="px-6 py-3 bg-red-600 hover:bg-red-700 disabled:bg-red-600/50 rounded-full font-bold uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-red-600/20 transition-all"
                 >
                   <Circle className="w-5 h-5 fill-white" /> Go Live
