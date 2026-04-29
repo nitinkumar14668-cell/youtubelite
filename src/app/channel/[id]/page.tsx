@@ -5,6 +5,7 @@ import { fetchFromAPI, resetApiKeys } from '../../../services/youtube';
 import { enrichVideos } from '../../../lib/youtubeUtils';
 import VideoCard from '../../../components/VideoCard';
 import QuotaExceededComponent from '../../../components/QuotaExceeded';
+import Image from 'next/image';
 
 export default function Channel() {
   const params = useParams();
@@ -75,11 +76,16 @@ export default function Channel() {
       {/* Channel Info */}
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
-          <img 
-            src={channelDetail?.snippet?.thumbnails?.high?.url} 
-            alt={channelDetail?.snippet?.title}
-            className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-[#0f0f0f] -mt-12 sm:-mt-16 bg-[#272727]"
-          />
+          <div className="relative w-24 h-24 sm:w-32 sm:h-32 -mt-12 sm:-mt-16 border-4 border-[#0f0f0f] rounded-full bg-[#272727] overflow-hidden shrink-0">
+            <Image 
+              src={channelDetail?.snippet?.thumbnails?.high?.url || 'https://via.placeholder.com/150'} 
+              alt={channelDetail?.snippet?.title || 'Avatar'}
+              fill
+              sizes="(max-width: 640px) 96px, 128px"
+              referrerPolicy="no-referrer"
+              className="object-cover"
+            />
+          </div>
           <div className="flex-1 text-center sm:text-left">
             <h1 className="text-2xl sm:text-3xl font-bold mb-1">{channelDetail?.snippet?.title}</h1>
             <div className="text-[#aaaaaa] text-sm flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-3">

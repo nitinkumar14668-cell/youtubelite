@@ -15,6 +15,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://i.ytimg.com" />
+        <link rel="preconnect" href="https://yt3.ggpht.com" />
+        <link rel="preconnect" href="https://ui-avatars.com" />
+      </head>
       <body className="bg-[#0f0f0f] text-white">
         <LocationProvider />
         <ClientLayout>{children}</ClientLayout>

@@ -5,6 +5,7 @@ import VideoCard from '../components/VideoCard';
 import DummyAd from '../components/DummyAd';
 import QuotaExceededComponent from '../components/QuotaExceeded';
 import ShortCard from '../components/ShortCard';
+import Image from 'next/image';
 import { Compass } from 'lucide-react';
 
 import { enrichVideos } from '../lib/youtubeUtils';
@@ -290,8 +291,8 @@ export default function Home() {
                   
                   elements.push(
                     <div key={`schunk-${cycleIdx}`} className="mb-4 sm:mb-8 clear-both w-full border-b border-[#272727] pb-8 pt-4 sm:border-none sm:pb-0 sm:pt-0">
-                      <div className="flex items-center gap-2 px-3 sm:px-0 mb-4 mt-2 sm:mt-0">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Youtube_shorts_icon.svg/512px-Youtube_shorts_icon.svg.png" alt="Shorts" className="w-6 h-6 object-contain" />
+                      <div className="flex items-center gap-2 px-3 sm:px-0 mb-4 mt-2 sm:mt-0 relative">
+                        <Image src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Youtube_shorts_icon.svg/512px-Youtube_shorts_icon.svg.png" alt="Shorts" width={24} height={24} className="object-contain" />
                         <h2 className="text-xl font-bold text-white">Shorts</h2>
                       </div>
                       <div className="flex overflow-x-auto custom-scrollbar gap-2 sm:gap-4 px-2 sm:px-0 pb-4 snap-x">

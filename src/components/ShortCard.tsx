@@ -3,6 +3,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MoreVertical } from 'lucide-react';
+import Image from 'next/image';
 import { motion } from 'motion/react';
 
 export default function ShortCard({ video }: { video: any }) {
@@ -24,11 +25,14 @@ export default function ShortCard({ video }: { video: any }) {
       className="group flex flex-col gap-2 w-full cursor-pointer relative"
     >
       <div className="relative aspect-[9/16] overflow-hidden rounded-xl">
-        <img 
-          src={thumbnail} 
-          alt={title}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-        />
+          <Image 
+            src={thumbnail} 
+            alt={title}
+            fill
+            referrerPolicy="no-referrer"
+            sizes="(max-width: 640px) 180px, 140px"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+          />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80" />
         <h3 
           className="absolute bottom-2 left-2 right-6 font-semibold text-white text-sm line-clamp-2 drop-shadow-md"

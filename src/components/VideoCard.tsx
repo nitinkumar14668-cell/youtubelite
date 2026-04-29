@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 
+import Image from 'next/image';
 import { motion } from 'motion/react';
 
 import { MoreVertical } from 'lucide-react';
@@ -70,10 +71,13 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
       className={`group flex ${containerClass} w-full transition-transform cursor-pointer relative ${layout === 'grid' ? 'mb-4 sm:mb-0' : ''}`}
     >
       <div className={`relative overflow-hidden transition-all duration-300 ${layout !== 'carousel' ? 'group-hover:rounded-none' : ''} ${thumbnailContainerClass}`}>
-        <img 
+        <Image 
           src={thumbnail} 
           alt={title}
-          className={`w-full bg-[#222] object-cover transition-transform duration-300 group-hover:scale-105 ${imageClass}`}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          referrerPolicy="no-referrer"
+          className={`bg-[#222] object-cover transition-transform duration-300 group-hover:scale-105 ${imageClass}`}
         />
         {/* Timestamp placeholder or LIVE badge */}
         {video.snippet?.liveBroadcastContent === 'live' ? (
@@ -92,8 +96,8 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
         {layout !== 'row' && (
           <div className="shrink-0 pt-0.5">
             <Link href={video.snippet?.channelId ? `/channel/${video.snippet.channelId}` : '#'} onClick={(e) => { e.stopPropagation(); if(!video.snippet?.channelId) e.preventDefault(); }}>
-              <div className="w-10 h-10 rounded-full bg-[#333] flex items-center justify-center text-sm hover:opacity-80 transition-opacity overflow-hidden">
-                <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(channelTitle)}&background=random`} alt={channelTitle} className="w-full h-full object-cover" />
+              <div className="w-10 h-10 rounded-full bg-[#333] flex items-center justify-center text-sm hover:opacity-80 transition-opacity overflow-hidden relative">
+                <Image src={`https://ui-avatars.com/api/?name=${encodeURIComponent(channelTitle)}&background=random`} alt={channelTitle} fill sizes="40px" referrerPolicy="no-referrer" className="object-cover" />
               </div>
             </Link>
           </div>

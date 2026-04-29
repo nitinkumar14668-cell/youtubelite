@@ -4,6 +4,7 @@ import { fetchFromAPI } from '../../services/youtube';
 import { ThumbsUp, ThumbsDown, MessageSquare, Share2, MoreHorizontal } from 'lucide-react';
 import QuotaExceededComponent from '../../components/QuotaExceeded';
 import { motion } from 'motion/react';
+import Image from 'next/image';
 
 export default function ShortsPage() {
   const [shorts, setShorts] = useState<any[]>([]);
@@ -90,10 +91,13 @@ function ShortsPlayer({ short }: { short: any }) {
             style={{ border: 'none' }}
           />
         ) : (
-          <img 
-            src={short.snippet?.thumbnails?.high?.url || short.snippet?.thumbnails?.medium?.url} 
+          <Image 
+            src={short.snippet?.thumbnails?.high?.url || short.snippet?.thumbnails?.medium?.url || 'https://via.placeholder.com/400x800.png?text=No+Thumbnail'} 
             alt="thumbnail"
-            className="absolute inset-0 w-full h-full object-cover"
+            fill
+            sizes="(max-width: 640px) 100vw, 400px"
+            referrerPolicy="no-referrer"
+            className="object-cover"
           />
         )}
 
