@@ -13,6 +13,7 @@ export default function SEOPage() {
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [showJustification, setShowJustification] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -183,9 +184,21 @@ export default function SEOPage() {
                     <span className="text-3xl font-bold text-green-400">{result.seoScore}</span>
                   </div>
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-white mb-1 flex items-center gap-2"><BarChart className="w-5 h-5 text-green-400"/> Excellent SEO Score</h3>
-                  <p className="text-[#aaaaaa] text-sm leading-relaxed">{result.scoreJustification}</p>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-bold text-white mb-1 flex items-center gap-2"><BarChart className="w-5 h-5 text-green-400"/> Excellent SEO Score</h3>
+                    <button 
+                      onClick={() => setShowJustification(!showJustification)}
+                      className="text-xs text-[#aaaaaa] hover:text-white flex items-center gap-1 bg-[#181818] px-2 py-1 rounded transition-colors"
+                    >
+                      {showJustification ? 'Hide Context' : 'Why this score?'}
+                    </button>
+                  </div>
+                  {showJustification && (
+                    <div className="mt-3 bg-[#181818] p-3 rounded-xl border border-[#3f3f3f] animate-in fade-in slide-in-from-top-2">
+                       <p className="text-[#aaaaaa] text-sm leading-relaxed">{result.scoreJustification}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
