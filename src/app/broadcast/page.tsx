@@ -15,6 +15,7 @@ export default function BroadcastPage() {
   const [chatMessages, setChatMessages] = useState<{user: string, text: string, color: string}[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [error, setError] = useState('');
+  const [showEndConfirmation, setShowEndConfirmation] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -254,12 +255,7 @@ export default function BroadcastPage() {
                 </button>
               ) : (
                 <button 
-                  onClick={() => {
-                    setIsLive(false);
-                    setLiveDuration(0);
-                    setViewers(0);
-                    setChatMessages([]);
-                  }}
+                  onClick={() => setShowEndConfirmation(true)}
                   className="px-6 py-3 bg-[#272727] hover:bg-[#3f3f3f] rounded-full font-bold flex items-center gap-2 shadow-lg transition-all"
                 >
                   End Stream
@@ -326,6 +322,35 @@ export default function BroadcastPage() {
           </form>
         </div>
       </div>
+
+      {showEndConfirmation && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+          <div className="bg-[#272727] p-6 rounded-2xl w-full max-w-sm">
+            <h3 className="text-xl font-bold mb-4">End Stream</h3>
+            <p className="text-[#aaaaaa] mb-6">Are you sure you want to end your live stream?</p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowEndConfirmation(false)}
+                className="px-4 py-2 hover:bg-[#3f3f3f] rounded-full font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowEndConfirmation(false);
+                  setIsLive(false);
+                  setLiveDuration(0);
+                  setViewers(0);
+                  setChatMessages([]);
+                }}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-full font-medium transition-colors"
+              >
+                End
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
