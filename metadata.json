@@ -1,6 +1,6 @@
 {
   "name": "YouTube Lite",
-  "description": "A lightweight YouTube clone using the YouTube Data API v3, featuring search, video playback, comments, and related videos.",
-  "requestFramePermissions": [],
+  "description": "A lightweight YouTube clone using the YouTube Data API v3, featuring search, video playback, comments, related videos, and a simulated live broadcasting studio.",
+  "requestFramePermissions": ["camera", "microphone"],
   "majorCapabilities": []
 }

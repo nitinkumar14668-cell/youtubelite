@@ -220,9 +220,9 @@ export default function Header({ toggleSidebar }: { toggleSidebar: () => void })
 
           {/* Right items */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <button className="hidden sm:block p-2 hover:bg-[#272727] rounded-full transition-colors">
+            <Link href="/broadcast" className="hidden sm:block p-2 hover:bg-[#272727] rounded-full transition-colors">
               <Video className="w-5 h-5" />
-            </button>
+            </Link>
             <button className="hidden sm:block p-2 hover:bg-[#272727] rounded-full transition-colors">
               <Bell className="w-5 h-5" />
             </button>

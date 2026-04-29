@@ -17,9 +17,9 @@ export default function BottomNav() {
         <PlaySquare className="w-6 h-6 mb-1" />
         <span>Shorts</span>
       </Link>
-      <button className="flex flex-col items-center p-2 hover:text-white">
+      <Link href="/broadcast" className={`flex flex-col items-center p-2 min-w-[64px] ${pathname === '/broadcast' ? 'text-white' : 'hover:text-white'}`}>
         <PlusCircle className="w-10 h-10 stroke-[1.5]" />
-      </button>
+      </Link>
       <Link href="/" className="flex flex-col items-center p-2 min-w-[64px] hover:text-white">
         <LayoutList className="w-6 h-6 mb-1" />
         <span>Subscriptions</span>

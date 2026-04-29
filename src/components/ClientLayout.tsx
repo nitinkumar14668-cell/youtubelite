@@ -1,11 +1,17 @@
 "use client";
 import React, { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import BottomNav from './BottomNav';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const pathname = usePathname();
+
+  if (pathname === '/broadcast') {
+    return <>{children}</>;
+  }
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#0f0f0f] text-white">
