@@ -132,12 +132,22 @@ export const fetchFromAPI = async (url: string) => {
                   }
                   return new Date().toISOString();
                 })(),
+              },
+              statistics: {
+                viewCount: v.views ? v.views.toString() : '0',
+                likeCount: '0'
               }
             }))
           };
         } else if (path === 'videos') {
-          const id = params.get('id');
-          if (!id) return { items: [] };
+          const ids = params.get('id')?.split(',') || [];
+          if (!ids.length) return { items: [] };
+          
+          if (ids.length > 1) {
+             return { items: [] }; // Enriched separately or skipped to avoid 20 concurrent requests
+          }
+          
+          const id = ids[0];
           try {
             const v = await ytSearch({ videoId: id });
             if (!v) return { items: [] };

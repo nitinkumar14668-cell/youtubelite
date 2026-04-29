@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
-import { Home, Compass, PlaySquare, Clock, ThumbsUp, Flame, Music, Gamepad2, Trophy, Settings, HelpCircle, MessageSquare } from 'lucide-react';
+import { Home, Compass, PlaySquare, Clock, ThumbsUp, Flame, Music, Gamepad2, Trophy, Settings, HelpCircle, MessageSquare, Sparkles } from 'lucide-react';
 
 const categories = [
   { name: 'Home', icon: <Home className="w-5 h-5" />, path: '/' },
@@ -14,6 +14,7 @@ const categories = [
   { divider: true },
   { title: 'Explore' },
   { name: 'Trending', icon: <Flame className="w-5 h-5" />, path: '/search/trending' },
+  { name: 'AI SEO Engine', icon: <Sparkles className="w-5 h-5 text-blue-400" />, path: '/seo' },
   { name: 'Music', icon: <Music className="w-5 h-5" />, path: '/search/music' },
   { name: 'Gaming', icon: <Gamepad2 className="w-5 h-5" />, path: '/search/gaming' },
   { name: 'Sports', icon: <Trophy className="w-5 h-5" />, path: '/search/sports' },
