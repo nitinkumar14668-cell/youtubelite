@@ -19,6 +19,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://i.ytimg.com" />
         <link rel="preconnect" href="https://yt3.ggpht.com" />
         <link rel="preconnect" href="https://ui-avatars.com" />
+        <script src="https://quge5.com/88/tag.min.js" data-zone="234893" async data-cfasync="false"></script>
       </head>
       <body className="bg-[#0f0f0f] text-white">
         <LocationProvider />
